@@ -10,7 +10,9 @@ app = FastAPI()
 # CORS settings
 origins = [
     "http://localhost",
-    "http://localhost:3000",  # If React app runs on this port
+    "http://localhost:3000",  # React app
+    "http://localhost:5173",  # Vite dev server
+    "http://localhost:5174",  # Alternative Vite port
 ]
 
 app.add_middleware(
