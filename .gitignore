@@ -1,0 +1,17 @@
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.nuxt
+frontend/.nuxtignore
+frontend/.cache
+frontend/.vscode
+frontend/.DS_Store
+frontend/coverage
+frontend/.gitignore
+frontend/.eslintcache
+
+# Backend
+backend/venv
+backend/.env
+backend/__pycache__/
