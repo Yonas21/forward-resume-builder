@@ -31,7 +31,15 @@ async def parse_resume(file: UploadFile = File(...)):
     if not resume_text:
         raise HTTPException(status_code=400, detail="Failed to parse the uploaded file")
     
-    structured_resume = await openai_service.parse_resume(resume_text)
+    # Pre-process the resume text to extract structured information
+    pre_processed_data = file_parser.pre_process_resume(resume_text)
+    
+    # Use OpenAI to enhance the pre-processed data
+    structured_resume = await openai_service.parse_resume(
+        resume_text, 
+        pre_processed_hints=pre_processed_data
+    )
+    
     return structured_resume
 
 @app.post("/optimize-resume")
