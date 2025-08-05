@@ -64,3 +64,12 @@ class ParseResumeRequest(BaseModel):
 class GenerateResumeRequest(BaseModel):
     job_description: JobDescription
     user_background: Optional[str] = None
+
+class User(BaseModel):
+    id: int
+    email: str
+    hashed_password: str
+
+class CreateUser(BaseModel):
+    email: str
+    hashed_password: str
