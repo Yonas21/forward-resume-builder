@@ -12,8 +12,37 @@ class OpenAIService:
         openai.api_key = os.getenv("OPENAI_API_KEY")
         self.model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
     
-    async def parse_resume(self, resume_text: str) -> Resume:
-        """Parse resume text and extract structured information"""
+    async def parse_resume(self, resume_text: str, pre_processed_hints: Dict[str, Any] = None) -> Resume:
+        """Parse resume text and extract structured information
+        
+        Args:
+            resume_text: The raw text extracted from the resume
+            pre_processed_hints: Pre-processed structured data to help guide the AI parsing
+        """
+        
+        # Prepare hints from pre-processed data if available
+        hints_text = ""
+        if pre_processed_hints:
+            hints_text = "\nPre-processed information to help with parsing:\n"
+            
+            # Add detected sections
+            if "detected_sections" in pre_processed_hints and pre_processed_hints["detected_sections"]:
+                hints_text += f"Detected sections: {', '.join(pre_processed_hints['detected_sections'])}\n"
+            
+            # Add extracted contact info
+            if "email" in pre_processed_hints:
+                hints_text += f"Detected email: {pre_processed_hints['email']}\n"
+            if "phone" in pre_processed_hints:
+                hints_text += f"Detected phone: {pre_processed_hints['phone']}\n"
+            if "name" in pre_processed_hints:
+                hints_text += f"Detected name: {pre_processed_hints['name']}\n"
+            
+            # Add section content hints
+            if "sections" in pre_processed_hints:
+                for section_name, content in pre_processed_hints["sections"].items():
+                    # Only include a preview of each section to keep prompt size reasonable
+                    content_preview = content[:200] + "..." if len(content) > 200 else content
+                    hints_text += f"\nDetected {section_name} section content preview:\n{content_preview}\n"
         
         prompt = f"""
         Parse the following resume text and extract structured information. Return a JSON object with the following structure:
@@ -70,6 +99,7 @@ class OpenAIService:
 
         Resume text:
         {resume_text}
+        {hints_text}
         
         Return only valid JSON without any additional text or formatting.
         """
@@ -78,7 +108,7 @@ class OpenAIService:
             response = openai.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are a resume parsing expert. Extract structured information from resumes and return valid JSON."},
+                    {"role": "system", "content": "You are a resume parsing expert. Extract structured information from resumes and return valid JSON. Pay special attention to the pre-processed hints provided, but verify all information against the original text."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1
