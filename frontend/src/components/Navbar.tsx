@@ -48,6 +48,16 @@ const Navbar: React.FC = () => {
             >
               Preview
             </Link>
+            <Link
+              to="/templates"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/templates') 
+                  ? 'bg-blue-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Templates
+            </Link>
           </div>
         </div>
       </div>
