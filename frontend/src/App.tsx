@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ResumePreview from './pages/ResumePreview';
 import TemplatesPreview from './pages/TemplatesPreview';
+import Signup from './components/Signup';
+import Login from './components/Login';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/builder" element={<ResumeBuilder />} />
           <Route path="/preview" element={<ResumePreview />} />
           <Route path="/templates" element={<TemplatesPreview />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
