@@ -21,8 +21,8 @@ const Navbar: React.FC = () => {
             <Link
               to="/"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/') 
-                  ? 'bg-blue-500 text-white' 
+                isActive('/')
+                  ? 'bg-blue-500 text-white'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -31,8 +31,8 @@ const Navbar: React.FC = () => {
             <Link
               to="/builder"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/builder') 
-                  ? 'bg-blue-500 text-white' 
+                isActive('/builder')
+                  ? 'bg-blue-500 text-white'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -41,8 +41,8 @@ const Navbar: React.FC = () => {
             <Link
               to="/preview"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/preview') 
-                  ? 'bg-blue-500 text-white' 
+                isActive('/preview')
+                  ? 'bg-blue-500 text-white'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -51,12 +51,32 @@ const Navbar: React.FC = () => {
             <Link
               to="/templates"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/templates') 
-                  ? 'bg-blue-500 text-white' 
+                isActive('/templates')
+                  ? 'bg-blue-500 text-white'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               Templates
+            </Link>
+            <Link
+              to="/signup"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/signup')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Signup
+            </Link>
+            <Link
+              to="/login"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/login')
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Login
             </Link>
           </div>
         </div>
