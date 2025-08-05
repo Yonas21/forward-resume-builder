@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Resume, OptimizeResumeRequest, GenerateResumeRequest } from '../types';
+import type { Resume, OptimizeResumeRequest, GenerateResumeRequest } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
 
