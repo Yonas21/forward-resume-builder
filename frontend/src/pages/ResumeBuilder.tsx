@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Resume } from '../types';
+import type { Resume } from '../types';
+import TemplateSelector from '../components/TemplateSelector';
+import { templates } from '../components/TemplateConfig';
 
 const ResumeBuilder: React.FC = () => {
   const navigate = useNavigate();
   const [currentResume, setCurrentResume] = useState<Resume | null>(null);
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#333');
+  const [selectedTemplate, setSelectedTemplate] = useState('basic');
+  const [profession, setProfession] = useState('');
 
   useEffect(() => {
     const storedResume = localStorage.getItem('currentResume');
+    const storedProfession = localStorage.getItem('selectedProfession');
+    
     if (storedResume) {
       setCurrentResume(JSON.parse(storedResume));
     } else {
@@ -23,51 +29,30 @@ const ResumeBuilder: React.FC = () => {
         certifications: []
       });
     }
+    
+    if (storedProfession) {
+      setProfession(storedProfession);
+      
+      // Set default template based on profession
+      const professionalTemplate = templates.find(t => 
+        t.profession.toLowerCase().includes(storedProfession.toLowerCase())
+      );
+      
+      if (professionalTemplate) {
+        setSelectedTemplate(professionalTemplate.id);
+      }
+    }
   }, []);
 
-  const handleInputChange = (section: keyof Resume, field: string, value: any) => {
+  const handleInputChange = (section: keyof Resume, field: string, value: string | string[] | Array<Record<string, string>>) => {
     setCurrentResume((prevResume) => {
       if (!prevResume) return null;
       return {
         ...prevResume,
-        [section]: {
-          ...prevResume[section],
+        [section]: typeof prevResume[section] === 'object' ? {
+          ...(prevResume[section] as object),
           [field]: value,
-        },
-      };
-    });
-  };
-
-  const handleArrayChange = (section: keyof Resume, index: number, field: string, value: any) => {
-    setCurrentResume((prevResume) => {
-      if (!prevResume) return null;
-      const updatedSection = [...(prevResume[section] as any[])];
-      updatedSection[index] = { ...updatedSection[index], [field]: value };
-      return {
-        ...prevResume,
-        [section]: updatedSection,
-      };
-    });
-  };
-
-  const handleAddItem = (section: keyof Resume, newItem: any) => {
-    setCurrentResume((prevResume) => {
-      if (!prevResume) return null;
-      const updatedSection = [...(prevResume[section] as any[]), newItem];
-      return {
-        ...prevResume,
-        [section]: updatedSection,
-      };
-    });
-  };
-
-  const handleRemoveItem = (section: keyof Resume, index: number) => {
-    setCurrentResume((prevResume) => {
-      if (!prevResume) return null;
-      const updatedSection = (prevResume[section] as any[]).filter((_, i) => i !== index);
-      return {
-        ...prevResume,
-        [section]: updatedSection,
+        } : value,
       };
     });
   };
@@ -84,19 +69,36 @@ const ResumeBuilder: React.FC = () => {
       <p className="text-lg text-gray-600 mb-8">
         Create a perfect resume from scratch or import your existing one—our AI transforms it fast to beat ATS every time.
       </p>
+      
+      {/* Template Selection */}
       <div className="bg-white shadow-lg rounded-lg p-8 mb-12">
-        <div className="flex justify-between items-center mb-8">
-          <select onChange={(e) => setFont(e.target.value)} className="p-2 border border-gray-300 rounded-lg">
-            <option value="font-sans">Sans</option>
-            <option value="font-serif">Serif</option>
-            <option value="font-mono">Monospace</option>
-          </select>
-          <input
-            type="color"
-            onChange={(e) => setColor(e.target.value)}
-            className="h-10 w-10 p-1 border border-gray-300 rounded-lg"
-          />
+        <h2 className="text-2xl font-semibold mb-4">Choose Your Template</h2>
+        <TemplateSelector 
+          selectedTemplate={selectedTemplate} 
+          onSelectTemplate={setSelectedTemplate}
+          profession={profession}
+        />
+        
+        <div className="mt-6 flex justify-between items-center mb-8">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
+            <select onChange={(e) => setFont(e.target.value)} className="p-2 border border-gray-300 rounded-lg">
+              <option value="font-sans">Sans</option>
+              <option value="font-serif">Serif</option>
+              <option value="font-mono">Monospace</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="h-10 w-10 p-1 border border-gray-300 rounded-lg"
+            />
+          </div>
         </div>
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
           <textarea
