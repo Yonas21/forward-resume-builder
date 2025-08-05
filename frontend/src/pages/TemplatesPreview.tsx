@@ -4,83 +4,83 @@ import { templates } from '../components/TemplateConfig';
 import type { Resume } from '../types';
 
 const TemplatesPreview: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState(templates[0].id);
+  const [selectedTemplate, setSelectedTemplate] = useState(templates[3].id);
   
-  // Sample resume data for preview
+  // Sample resume data for preview - Data Analyst template
   const sampleResume: Resume = {
     personal_info: {
-      full_name: 'Alex Johnson',
-      email: 'alex.johnson@example.com',
+      full_name: 'Your Name',
+      email: 'yourname@example.com',
       phone: '(555) 123-4567',
-      location: 'New York, NY',
-      linkedin: 'linkedin.com/in/alexjohnson',
-      github: 'github.com/alexjohnson',
-      website: 'alexjohnson.dev'
+      location: 'San Francisco, CA',
+      linkedin: 'linkedin.com/in/yourname',
+      github: 'github.com/yourname',
+      website: 'yourportfolio.dev'
     },
-    professional_summary: 'Experienced professional with 5+ years of expertise in the field. Proven track record of delivering results and driving innovation.',
-    skills: ['Project Management', 'Team Leadership', 'Strategic Planning', 'Problem Solving', 'Communication', 'Data Analysis', 'Technical Writing'],
+    professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
+    skills: ['SQL', 'Python', 'R', 'Tableau', 'Power BI', 'Excel', 'Statistical Analysis', 'Data Visualization', 'Machine Learning', 'A/B Testing', 'Data Cleaning', 'ETL Processes'],
     experience: [
       {
-        company: 'Tech Innovations Inc.',
-        position: 'Senior Project Manager',
-        start_date: 'Jan 2020',
+        company: 'Data Insights Corp',
+        position: 'Senior Data Analyst',
+        start_date: 'Jun 2021',
         end_date: 'Present',
         is_current: true,
-        description: ['Led cross-functional teams to deliver projects on time and within budget', 'Implemented process improvements resulting in 20% efficiency increase', 'Managed stakeholder relationships and client communications']
+        description: ['Analyzed customer behavior data to identify patterns, resulting in 15% increase in user retention', 'Built interactive dashboards using Tableau to visualize KPIs for executive leadership', 'Implemented A/B testing framework that improved conversion rates by 22%', 'Collaborated with cross-functional teams to develop data-driven solutions']
       },
       {
-        company: 'Global Solutions LLC',
-        position: 'Project Coordinator',
-        start_date: 'Mar 2018',
-        end_date: 'Dec 2019',
+        company: 'Tech Analytics LLC',
+        position: 'Data Analyst',
+        start_date: 'Mar 2019',
+        end_date: 'May 2021',
         is_current: false,
-        description: ['Assisted in planning and execution of multiple concurrent projects', 'Developed project documentation and tracking systems', 'Coordinated with vendors and external partners']
+        description: ['Performed data cleaning and preprocessing on large datasets using Python and SQL', 'Created automated reporting systems that saved 10 hours of manual work weekly', 'Conducted statistical analysis to identify market trends and opportunities', 'Presented findings to stakeholders in clear, actionable reports']
       }
     ],
     education: [
       {
-        institution: 'University of Business',
-        degree: 'Master of Business Administration',
-        field_of_study: 'Project Management',
-        start_date: '2016',
-        end_date: '2018',
-        gpa: '3.8'
+        institution: 'University of Data Science',
+        degree: 'Master of Science',
+        field_of_study: 'Data Analytics',
+        start_date: '2017',
+        end_date: '2019',
+        gpa: '3.9'
       },
       {
         institution: 'State University',
         degree: 'Bachelor of Science',
-        field_of_study: 'Business Administration',
-        start_date: '2012',
-        end_date: '2016',
-        gpa: '3.6'
+        field_of_study: 'Statistics',
+        start_date: '2013',
+        end_date: '2017',
+        gpa: '3.7'
       }
     ],
     projects: [
       {
-        name: 'Enterprise Resource Planning Implementation',
-        description: 'Led the implementation of a new ERP system across the organization, resulting in streamlined operations and improved data visibility.',
-        technologies: ['SAP', 'SQL', 'Process Mapping', 'Change Management']
+        name: 'Customer Segmentation Analysis',
+        description: 'Applied clustering algorithms to segment customers based on purchasing behavior, enabling targeted marketing campaigns that increased revenue by 18%.',
+        technologies: ['Python', 'scikit-learn', 'Pandas', 'Matplotlib', 'K-means Clustering']
       },
       {
-        name: 'Digital Transformation Initiative',
-        description: 'Spearheaded a company-wide digital transformation initiative, modernizing legacy systems and introducing new digital tools.',
-        technologies: ['Agile Methodology', 'JIRA', 'Microsoft Power BI', 'Salesforce']
+        name: 'Sales Prediction Model',
+        description: 'Developed a machine learning model to forecast quarterly sales with 92% accuracy, helping the company optimize inventory management and resource allocation.',
+        technologies: ['R', 'Random Forest', 'Time Series Analysis', 'Data Visualization', 'Feature Engineering']
       }
     ],
     certifications: [
       {
-        name: 'Project Management Professional (PMP)',
-        issuing_organization: 'Project Management Institute',
-        issue_date: '2019-05-15',
-        expiration_date: '2022-05-15',
-        credential_id: 'PMP-123456'
+        name: 'Microsoft Certified: Data Analyst Associate',
+        issuing_organization: 'Microsoft',
+        issue_date: '2022-03-15',
+        expiration_date: '2025-03-15',
+        credential_id: 'DA-123456'
       },
       {
-        name: 'Certified Scrum Master (CSM)',
-        issuing_organization: 'Scrum Alliance',
-        issue_date: '2018-10-10',
-        expiration_date: '2020-10-10',
-        credential_id: 'CSM-789012'
+        name: 'Google Data Analytics Professional Certificate',
+        issuing_organization: 'Google',
+        issue_date: '2021-06-10',
+        expiration_date: '',
+        credential_id: 'GDA-789012'
       }
     ]
   };
@@ -111,7 +111,7 @@ const TemplatesPreview: React.FC = () => {
               <div className="transform scale-75 origin-top">
                 {React.createElement(template.component, {
                   resume: sampleResume,
-                  color: '#4f46e5', // Default purple color
+                  color: '#4f46e5',
                   font: 'font-sans'
                 })}
               </div>
