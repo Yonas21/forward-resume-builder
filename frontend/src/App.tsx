@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ResumePreview from './pages/ResumePreview';
+import TemplatesPreview from './pages/TemplatesPreview';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/builder" element={<ResumeBuilder />} />
           <Route path="/preview" element={<ResumePreview />} />
+          <Route path="/templates" element={<TemplatesPreview />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
