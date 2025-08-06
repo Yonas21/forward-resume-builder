@@ -93,12 +93,16 @@ const ResumePreview: React.FC = () => {
 
   useEffect(() => {
     const storedResume = localStorage.getItem('currentResume');
-    const storedFont = localStorage.getItem('selectedFont');
-    const storedColor = localStorage.getItem('selectedColor');
+    const storedFont = localStorage.getItem('resumeFont') || localStorage.getItem('selectedFont');
+    const storedColor = localStorage.getItem('resumeColor') || localStorage.getItem('selectedColor');
     const storedTemplate = localStorage.getItem('selectedTemplate');
 
     if (storedResume) {
-      setCurrentResume(JSON.parse(storedResume));
+      try {
+        setCurrentResume(JSON.parse(storedResume));
+      } catch (error) {
+        console.error('Error parsing stored resume:', error);
+      }
     }
 
     if (storedFont) {
