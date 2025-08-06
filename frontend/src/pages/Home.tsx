@@ -1,234 +1,205 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiService } from '../services/api';
-import type { JobDescription } from '../types';
-import FileUpload from '../components/FileUpload';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'upload' | 'generate'>('upload');
-  const [jobDescription, setJobDescription] = useState<JobDescription>({
-    title: '',
-    company: '',
-    description: '',
-    requirements: []
-  });
-  const [userBackground, setUserBackground] = useState('');
-  const [profession, setProfession] = useState('');
-  
-  const professions = [
-    'Software Developer',
-    'Data Analyst',
-    'Data Engineer',
-    'Business & Legal',
-    'Creative & Tech',
-    'Other'
-  ];
 
-  const handleGenerateFromJob = async () => {
-    if (!jobDescription.title || !jobDescription.company) {
-      alert('Please fill in at least the job title and company.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const generatedResume = await apiService.generateResume({
-        job_description: jobDescription,
-        user_background: userBackground || undefined
-      });
-      localStorage.setItem('currentResume', JSON.stringify(generatedResume));
-      localStorage.setItem('selectedProfession', profession);
-      navigate('/builder');
-    } catch (error) {
-      console.error('Error generating resume:', error);
-      alert('Failed to generate resume. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const handleOptionClick = (option: 'templates' | 'upload' | 'generate') => {
+    localStorage.setItem('resumeFlow', option);
+    if (option === 'templates') {
+      navigate('/templates');
+    } else {
+      navigate('/templates', { state: { defaultTab: option } });
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">Resume Builder</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-4">
-          Create a professional resume in minutes. Upload your existing resume for improvement or generate a new one based on a job description.
-        </p>
-        <div className="mt-6">
-          <button
-            onClick={() => navigate('/templates')}
-            className="bg-purple-600 text-white py-2 px-6 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center"
-          >
-            <span>Browse Resume Templates</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+        <div className="text-center">
+          <div className="inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full mb-6">
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
             </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b mb-6">
-        <button
-          className={`py-2 px-4 font-medium ${activeTab === 'upload' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-          onClick={() => setActiveTab('upload')}
-        >
-          Upload Resume
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${activeTab === 'generate' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-          onClick={() => setActiveTab('generate')}
-        >
-          Generate from Job Description
-        </button>
-      </div>
-
-      {/* Content based on active tab */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        {activeTab === 'upload' ? (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Upload Your Resume</h2>
-            <p className="text-gray-600 mb-4">
-              Upload your existing resume in PDF or DOCX format. We'll parse it and help you improve it with professional templates.
-            </p>
-            <FileUpload setIsLoading={setIsLoading} />
+            AI-Powered Resume Builder
           </div>
-        ) : (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Generate Resume from Job Description</h2>
-            <p className="text-gray-600 mb-4">
-              Enter a job description and we'll generate a tailored resume for you.
-            </p>
+          
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Build Your
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"> Dream Resume</span>
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            Create ATS-friendly, professional resumes in minutes with AI assistance. 
+            Choose from premium templates, customize every detail, and land your dream job.
+          </p>
 
-            <div className="space-y-4">
-              {/* Profession Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Your Profession
-                </label>
-                <select
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={profession}
-                  onChange={(e) => setProfession(e.target.value)}
-                >
-                  <option value="">Select a profession</option>
-                  {professions.map((prof) => (
-                    <option key={prof} value={prof}>
-                      {prof}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Job Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={jobDescription.title}
-                  onChange={(e) =>
-                    setJobDescription({ ...jobDescription, title: e.target.value })
-                  }
-                  placeholder="e.g. Senior Software Engineer"
-                />
-              </div>
-
-              {/* Company */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={jobDescription.company}
-                  onChange={(e) =>
-                    setJobDescription({ ...jobDescription, company: e.target.value })
-                  }
-                  placeholder="e.g. Tech Innovations Inc."
-                />
-              </div>
-
-              {/* Job Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Description
-                </label>
-                <textarea
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={5}
-                  value={jobDescription.description}
-                  onChange={(e) =>
-                    setJobDescription({
-                      ...jobDescription,
-                      description: e.target.value,
-                    })
-                  }
-                  placeholder="Paste the job description here..."
-                />
-              </div>
-
-              {/* Requirements */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Key Requirements (one per line)
-                </label>
-                <textarea
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={3}
-                  value={jobDescription.requirements.join('\n')}
-                  onChange={(e) =>
-                    setJobDescription({
-                      ...jobDescription,
-                      requirements: e.target.value.split('\n').filter(Boolean),
-                    })
-                  }
-                  placeholder="e.g.\n5+ years of experience\nProficient in React\nStrong communication skills"
-                />
-              </div>
-
-              {/* Background Information */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Background (optional)
-                </label>
-                <textarea
-                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={4}
-                  value={userBackground}
-                  onChange={(e) => setUserBackground(e.target.value)}
-                  placeholder="Provide some information about your experience, education, and skills..."
-                />
-              </div>
-
-              <button
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-                onClick={handleGenerateFromJob}
-                disabled={isLoading || !jobDescription.title || !jobDescription.company}
-              >
-                {isLoading ? 'Generating...' : 'Generate Resume'}
-              </button>
+          {/* Feature Stats */}
+          <div className="flex justify-center space-x-8 mb-16 text-sm">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">50+</div>
+              <div className="text-gray-600">Templates</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">AI</div>
+              <div className="text-gray-600">Powered</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">ATS</div>
+              <div className="text-gray-600">Optimized</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">Free</div>
+              <div className="text-gray-600">Forever</div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-700">
-              {activeTab === 'upload' ? 'Parsing your resume...' : 'Generating your resume...'}
-            </p>
-            <p className="text-gray-500 text-sm mt-2">This may take a moment</p>
+        {/* Main CTA Options */}
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-8">
+            How would you like to start?
+          </h2>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Build from Scratch */}
+            <div 
+              onClick={() => handleOptionClick('templates')}
+              className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 hover:border-blue-300 p-8 text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Build from Scratch
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Start with a blank canvas and choose from our collection of professional templates.
+                </p>
+                <div className="inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700">
+                  <span>Get Started</span>
+                  <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Resume */}
+            <div 
+              onClick={() => handleOptionClick('upload')}
+              className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 hover:border-green-300 p-8 text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Upload & Enhance
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Upload your existing resume (PDF/DOCX/JSON) and enhance it with AI and professional templates.
+                </p>
+                <div className="inline-flex items-center text-green-600 font-medium group-hover:text-green-700">
+                  <span>Upload Resume</span>
+                  <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Generate from Job */}
+            <div 
+              onClick={() => handleOptionClick('generate')}
+              className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 hover:border-purple-300 p-8 text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-violet-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-200 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  AI Generate
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Paste a job description and let our AI create a tailored resume that matches perfectly.
+                </p>
+                <div className="inline-flex items-center text-purple-600 font-medium group-hover:text-purple-700">
+                  <span>Generate with AI</span>
+                  <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Features Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Why Choose Our Resume Builder?
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Built by developers, for professionals. Every feature designed to help you succeed.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">AI-Powered</h3>
+              <p className="text-sm text-gray-600">Smart content suggestions and optimization for any job.</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">ATS-Friendly</h3>
+              <p className="text-sm text-gray-600">Guaranteed to pass applicant tracking systems.</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Customizable</h3>
+              <p className="text-sm text-gray-600">Full control over fonts, colors, layouts, and sections.</p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Mobile Ready</h3>
+              <p className="text-sm text-gray-600">Build and edit your resume on any device, anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
