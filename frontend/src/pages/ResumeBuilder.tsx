@@ -49,23 +49,29 @@ const SortableSection: React.FC<SortableSectionProps> = ({ id, section, isActive
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <button
-        onClick={onClick}
-        className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-move ${
-          isActive
-            ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-600'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        }`}
-      >
-        <span className="mr-3">{section.icon}</span>
-        {section.name}
-        <span className="ml-auto text-gray-400">
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <div className="flex items-center">
+        <button
+          onClick={onClick}
+          className={`flex-1 flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+            isActive
+              ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+        >
+          <span className="mr-3">{section.icon}</span>
+          {section.name}
+        </button>
+        <div
+          {...listeners}
+          className="px-2 py-2 cursor-move text-gray-400 hover:text-gray-600"
+          title="Drag to reorder"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
           </svg>
-        </span>
-      </button>
+        </div>
+      </div>
     </div>
   );
 };
