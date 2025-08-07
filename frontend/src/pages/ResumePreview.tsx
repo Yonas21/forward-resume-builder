@@ -3,6 +3,8 @@ import type { Resume } from '../types';
 import { templates } from '../components/TemplateConfig';
 import { FiDownload, FiPrinter, FiFileText, FiMaximize, FiMinimize, FiEdit } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import { pdf } from '@react-pdf/renderer';
+import ResumePDF from '../components/ResumePDF';
 
 const ResumePreview: React.FC = () => {
   const [currentResume, setCurrentResume] = useState<Resume | null>(null);
@@ -135,6 +137,26 @@ const ResumePreview: React.FC = () => {
     window.print();
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const resumeToExport = currentResume || sampleResume;
+      const pdfDoc = <ResumePDF resume={resumeToExport} sectionOrder={sectionOrder} />;
+      const blob = await pdf(pdfDoc).toBlob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${resumeToExport.personal_info?.full_name?.replace(/\s+/g, '_') || 'resume'}_resume.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  };
+
   const handleExportJson = () => {
     if (!currentResume) return;
 
@@ -189,10 +211,16 @@ const ResumePreview: React.FC = () => {
       
       <div className="mb-6 no-print flex flex-wrap gap-3 sticky top-0 bg-white z-10 p-2 border-b border-gray-200">
         <button
+          onClick={handleExportPDF}
+          className="flex items-center bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
+        >
+          <FiDownload className="mr-2" /> Export as PDF
+        </button>
+        <button
           onClick={handlePrint}
           className="flex items-center bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
         >
-          <FiPrinter className="mr-2" /> Print / Download PDF
+          <FiPrinter className="mr-2" /> Print
         </button>
         <button
           onClick={handleExportJson}
@@ -217,14 +245,22 @@ const ResumePreview: React.FC = () => {
 
       {showPrintGuide && (
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200 no-print">
-          <h3 className="font-bold text-lg mb-2">How to save your resume as PDF:</h3>
-          <ol className="list-decimal pl-5 space-y-1">
-            <li>Click the "Print / Download PDF" button above</li>
-            <li>In the print dialog, change the destination to "Save as PDF"</li>
-            <li>Click "Save" and choose where to save your file</li>
-            <li>Your resume is now saved as a professional PDF ready to share!</li>
-          </ol>
-          <p className="mt-3 text-sm text-blue-600">Tip: Make sure all content fits properly before saving. Use Full Screen Preview to check how it will look.</p>
+          <h3 className="font-bold text-lg mb-2">Export Options:</h3>
+          <div className="space-y-3">
+            <div>
+              <h4 className="font-semibold text-red-700">Export as PDF (Recommended)</h4>
+              <p className="text-sm text-gray-700">Click "Export as PDF" to download a professional PDF version of your resume. This creates a clean, formatted document perfect for job applications.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-700">Print</h4>
+              <p className="text-sm text-gray-700">Use the browser's print function to print or save as PDF through the print dialog.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-green-700">Export as JSON</h4>
+              <p className="text-sm text-gray-700">Download your resume data as a JSON file for backup or to import into other systems.</p>
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-blue-600">Tip: The "Export as PDF" option creates the most professional-looking document for job applications.</p>
         </div>
       )}
 
