@@ -1,21 +1,12 @@
 from beanie import Document, init_beanie
 from pydantic import BaseModel, EmailStr, Field
-from pydantic_settings import BaseSettings
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import logging
+from core.config import settings
 
 logger = logging.getLogger(__name__)
-
-class DatabaseSettings(BaseSettings):
-    mongodb_url: str = "mongodb://localhost:27017"
-    database_name: str = "resume_builder"
-    
-    class Config:
-        env_file = ".env"
-
-settings = DatabaseSettings()
 
 # MongoDB client
 mongodb_client: Optional[AsyncIOMotorClient] = None
