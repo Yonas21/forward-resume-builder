@@ -12,7 +12,7 @@ const ResumeBuilder: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('basic');
   const [activeSection, setActiveSection] = useState('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [sectionOrder, setSectionOrder] = useState([
+  const [sectionOrder] = useState([
     'personal',
     'summary',
     'experience',
@@ -231,13 +231,38 @@ const ResumeBuilder: React.FC = () => {
     
     setIsAiLoading(true);
     try {
-      // This would be a call to your AI service
-      // For now, we'll simulate it
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const aiSummary = `Results-driven professional with expertise in ${currentResume.skills.slice(0, 3).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
-      updateResume({ professional_summary: aiSummary });
+      // Create a simplified prompt based on current resume data
+      const userBackground = `
+        Skills: ${currentResume.skills.join(', ')}
+        Experience: ${currentResume.experience.map(exp => `${exp.position} at ${exp.company}`).join(', ')}
+        Education: ${currentResume.education.map(edu => `${edu.degree} in ${edu.field_of_study} from ${edu.institution}`).join(', ')}
+      `.trim();
+
+      // Generate a fake job description for the AI to work with
+      const fakeJobDescription = {
+        title: "Professional Role",
+        company: "Generic Company",
+        description: "Looking for a skilled professional",
+        requirements: currentResume.skills.slice(0, 3)
+      };
+
+      const response = await apiService.generateResume({
+        job_description: fakeJobDescription,
+        user_background: userBackground
+      });
+
+      if (response?.professional_summary) {
+        updateResume({ professional_summary: response.professional_summary });
+      } else {
+        // Fallback to local generation if API fails
+        const aiSummary = `Results-driven professional with expertise in ${currentResume.skills.slice(0, 3).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
+        updateResume({ professional_summary: aiSummary });
+      }
     } catch (error) {
       console.error('Error generating AI summary:', error);
+      // Fallback to local generation
+      const aiSummary = `Experienced professional with strong background in ${currentResume.skills.slice(0, 3).join(', ')}. Demonstrated ability to deliver results and drive innovation in dynamic environments.`;
+      updateResume({ professional_summary: aiSummary });
     } finally {
       setIsAiLoading(false);
     }
@@ -618,35 +643,504 @@ const ResumeBuilder: React.FC = () => {
                   </div>
                 )}
 
-                {/* Add other sections (experience, education, projects, certifications) with similar patterns */}
-                {/* For brevity, I'll add a placeholder for these */}
+                {/* Work Experience */}
                 {activeSection === 'experience' && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-medium text-gray-900">Work Experience</h3>
                       <button
                         onClick={addExperience}
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                       >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Add Experience
                       </button>
                     </div>
-                    <p className="text-sm text-gray-600">Experience section editing would go here...</p>
+                    
+                    {currentResume.experience.length === 0 ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div className="text-4xl mb-4">💼</div>
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No work experience added yet</h4>
+                        <p className="text-gray-600 mb-4">Add your work experience to showcase your professional background</p>
+                        <button
+                          onClick={addExperience}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add Your First Job
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {currentResume.experience.map((exp, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
+                            <button
+                              onClick={() => deleteExperience(index)}
+                              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+                                <input
+                                  type="text"
+                                  value={exp.position}
+                                  onChange={(e) => updateExperience(index, { position: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. Software Engineer"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+                                <input
+                                  type="text"
+                                  value={exp.company}
+                                  onChange={(e) => updateExperience(index, { company: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. Google"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-3 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                                <input
+                                  type="month"
+                                  value={exp.start_date}
+                                  onChange={(e) => updateExperience(index, { start_date: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input
+                                  type="month"
+                                  value={exp.end_date}
+                                  onChange={(e) => updateExperience(index, { end_date: e.target.value })}
+                                  disabled={exp.is_current}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                />
+                              </div>
+                              <div className="flex items-end">
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={exp.is_current}
+                                    onChange={(e) => updateExperience(index, { 
+                                      is_current: e.target.checked,
+                                      end_date: e.target.checked ? '' : exp.end_date
+                                    })}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="ml-2 text-sm text-gray-700">Current Position</span>
+                                </label>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
+                              <div className="space-y-2">
+                                {exp.description.map((desc, descIndex) => (
+                                  <div key={descIndex} className="flex items-start space-x-2">
+                                    <textarea
+                                      value={desc}
+                                      onChange={(e) => {
+                                        const newDescription = [...exp.description];
+                                        newDescription[descIndex] = e.target.value;
+                                        updateExperience(index, { description: newDescription });
+                                      }}
+                                      rows={2}
+                                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                      placeholder="• Describe your key achievement or responsibility..."
+                                    />
+                                    {exp.description.length > 1 && (
+                                      <button
+                                        onClick={() => {
+                                          const newDescription = exp.description.filter((_, i) => i !== descIndex);
+                                          updateExperience(index, { description: newDescription });
+                                        }}
+                                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => {
+                                    const newDescription = [...exp.description, ''];
+                                    updateExperience(index, { description: newDescription });
+                                  }}
+                                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                                >
+                                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                  </svg>
+                                  Add Bullet Point
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Add bullet points describing your key achievements and responsibilities
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {(activeSection === 'education' || activeSection === 'projects' || activeSection === 'certifications') && (
-                  <div className="text-center py-12">
-                    <div className="text-4xl mb-4">🚧</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {sections[activeSection as keyof typeof sections]?.name} Editor
-                    </h3>
-                    <p className="text-gray-600">
-                      This section is being built. For now, you can edit the basic information.
-                    </p>
+                {/* Education */}
+                {activeSection === 'education' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-gray-900">Education</h3>
+                      <button
+                        onClick={addEducation}
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Education
+                      </button>
+                    </div>
+                    
+                    {currentResume.education.length === 0 ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div className="text-4xl mb-4">🎓</div>
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No education added yet</h4>
+                        <p className="text-gray-600 mb-4">Add your educational background to showcase your qualifications</p>
+                        <button
+                          onClick={addEducation}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add Your First Degree
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {currentResume.education.map((edu, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
+                            <button
+                              onClick={() => deleteEducation(index)}
+                              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Institution *</label>
+                                <input
+                                  type="text"
+                                  value={edu.institution}
+                                  onChange={(e) => updateEducation(index, { institution: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. Harvard University"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Degree *</label>
+                                <input
+                                  type="text"
+                                  value={edu.degree}
+                                  onChange={(e) => updateEducation(index, { degree: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. Bachelor of Science"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Field of Study *</label>
+                              <input
+                                type="text"
+                                value={edu.field_of_study}
+                                onChange={(e) => updateEducation(index, { field_of_study: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g. Computer Science"
+                              />
+                            </div>
+                            
+                            <div className="grid md:grid-cols-3 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input
+                                  type="month"
+                                  value={edu.start_date}
+                                  onChange={(e) => updateEducation(index, { start_date: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input
+                                  type="month"
+                                  value={edu.end_date}
+                                  onChange={(e) => updateEducation(index, { end_date: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">GPA (Optional)</label>
+                                <input
+                                  type="text"
+                                  value={edu.gpa}
+                                  onChange={(e) => updateEducation(index, { gpa: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. 3.8/4.0"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Projects */}
+                {activeSection === 'projects' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-gray-900">Projects</h3>
+                      <button
+                        onClick={addProject}
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Project
+                      </button>
+                    </div>
+                    
+                    {currentResume.projects.length === 0 ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div className="text-4xl mb-4">🚀</div>
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No projects added yet</h4>
+                        <p className="text-gray-600 mb-4">Showcase your projects to demonstrate your skills and experience</p>
+                        <button
+                          onClick={addProject}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add Your First Project
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {currentResume.projects.map((project, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
+                            <button
+                              onClick={() => deleteProject(index)}
+                              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                            
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Project Name *</label>
+                              <input
+                                type="text"
+                                value={project.name}
+                                onChange={(e) => updateProject(index, { name: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g. E-commerce Website"
+                              />
+                            </div>
+                            
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Project URL (Optional)</label>
+                              <input
+                                type="url"
+                                value={project.url}
+                                onChange={(e) => updateProject(index, { url: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="https://github.com/username/project"
+                              />
+                            </div>
+                            
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                              <textarea
+                                value={project.description}
+                                onChange={(e) => updateProject(index, { description: e.target.value })}
+                                rows={3}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                placeholder="Describe your project, its purpose, and your contributions..."
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Technologies Used</label>
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                {project.technologies.map((tech, techIndex) => (
+                                  <span
+                                    key={techIndex}
+                                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                                  >
+                                    {tech}
+                                    <button
+                                      onClick={() => {
+                                        const newTech = project.technologies.filter((_, i) => i !== techIndex);
+                                        updateProject(index, { technologies: newTech });
+                                      }}
+                                      className="ml-2 text-green-600 hover:text-green-800"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                              <input
+                                type="text"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                    const newTech = [...project.technologies, e.currentTarget.value.trim()];
+                                    updateProject(index, { technologies: newTech });
+                                    e.currentTarget.value = '';
+                                  }
+                                }}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Add a technology and press Enter"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                Press Enter to add each technology (e.g. React, Node.js, MongoDB)
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Certifications */}
+                {activeSection === 'certifications' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-gray-900">Certifications</h3>
+                      <button
+                        onClick={addCertification}
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Certification
+                      </button>
+                    </div>
+                    
+                    {currentResume.certifications.length === 0 ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div className="text-4xl mb-4">🏆</div>
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No certifications added yet</h4>
+                        <p className="text-gray-600 mb-4">Add your professional certifications to boost your credibility</p>
+                        <button
+                          onClick={addCertification}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add Your First Certification
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {currentResume.certifications.map((cert, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
+                            <button
+                              onClick={() => deleteCertification(index)}
+                              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Certification Name *</label>
+                                <input
+                                  type="text"
+                                  value={cert.name}
+                                  onChange={(e) => updateCertification(index, { name: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. AWS Solutions Architect"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Issuing Organization *</label>
+                                <input
+                                  type="text"
+                                  value={cert.issuing_organization}
+                                  onChange={(e) => updateCertification(index, { issuing_organization: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="e.g. Amazon Web Services"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Issue Date</label>
+                                <input
+                                  type="month"
+                                  value={cert.issue_date}
+                                  onChange={(e) => updateCertification(index, { issue_date: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Expiration Date (Optional)</label>
+                                <input
+                                  type="month"
+                                  value={cert.expiration_date}
+                                  onChange={(e) => updateCertification(index, { expiration_date: e.target.value })}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Credential ID (Optional)</label>
+                              <input
+                                type="text"
+                                value={cert.credential_id}
+                                onChange={(e) => updateCertification(index, { credential_id: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g. AWS-SAA-123456789"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
