@@ -41,10 +41,16 @@ export interface Certification {
   credential_id?: string;
 }
 
+export interface Skill {
+  name: string;
+  category: string;
+  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+}
+
 export interface Resume {
   personal_info: PersonalInfo;
   professional_summary: string;
-  skills: string[];
+  skills: Skill[];
   experience: Experience[];
   education: Education[];
   projects: Project[];
