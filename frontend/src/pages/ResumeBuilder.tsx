@@ -1,8 +1,74 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Resume, Experience, Education, Project, Certification } from '../types';
+import type { Resume, Experience, Education, Project, Certification, Skill } from '../types';
 import { templates } from '../components/TemplateConfig';
 import { apiService } from '../services/api';
+import SkillsBuilder from '../components/SkillsBuilder';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Section Component
+interface SortableSectionProps {
+  id: string;
+  section: { name: string; icon: string };
+  isActive: boolean;
+  onClick: () => void;
+}
+
+const SortableSection: React.FC<SortableSectionProps> = ({ id, section, isActive, onClick }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <button
+        onClick={onClick}
+        className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-move ${
+          isActive
+            ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-600'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        }`}
+      >
+        <span className="mr-3">{section.icon}</span>
+        {section.name}
+        <span className="ml-auto text-gray-400">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+          </svg>
+        </span>
+      </button>
+    </div>
+  );
+};
 
 const ResumeBuilder: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +78,7 @@ const ResumeBuilder: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('basic');
   const [activeSection, setActiveSection] = useState('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [sectionOrder] = useState([
+  const [sectionOrder, setSectionOrder] = useState([
     'personal',
     'summary',
     'experience',
@@ -21,6 +87,14 @@ const ResumeBuilder: React.FC = () => {
     'projects',
     'certifications'
   ]);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const sections = {
     personal: { name: 'Personal Info', icon: '👤' },
@@ -50,13 +124,32 @@ const ResumeBuilder: React.FC = () => {
   useEffect(() => {
     const storedResume = localStorage.getItem('currentResume');
     const storedTemplate = localStorage.getItem('selectedTemplate');
+    const storedSectionOrder = localStorage.getItem('sectionOrder');
     
     if (storedTemplate) {
       setSelectedTemplate(storedTemplate);
     }
     
+    if (storedSectionOrder) {
+      setSectionOrder(JSON.parse(storedSectionOrder));
+    }
+    
     if (storedResume) {
-      setCurrentResume(JSON.parse(storedResume));
+      const parsedResume = JSON.parse(storedResume);
+      
+      // Migrate old skills structure (string[]) to new structure (Skill[])
+      if (parsedResume.skills && Array.isArray(parsedResume.skills)) {
+        if (parsedResume.skills.length > 0 && typeof parsedResume.skills[0] === 'string') {
+          // Convert old string skills to new Skill objects
+          parsedResume.skills = parsedResume.skills.map((skill: string) => ({
+            name: skill,
+            category: 'technical',
+            level: 'intermediate'
+          }));
+        }
+      }
+      
+      setCurrentResume(parsedResume);
     } else {
       // Initialize with empty resume
       setCurrentResume({
@@ -85,6 +178,11 @@ const ResumeBuilder: React.FC = () => {
       localStorage.setItem('currentResume', JSON.stringify(currentResume));
     }
   }, [currentResume]);
+
+  // Save section order to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sectionOrder', JSON.stringify(sectionOrder));
+  }, [sectionOrder]);
 
   const updateResume = (updates: Partial<Resume>) => {
     setCurrentResume(prev => prev ? { ...prev, ...updates } : null);
@@ -211,10 +309,15 @@ const ResumeBuilder: React.FC = () => {
   };
 
   const addSkill = (skill: string) => {
-    if (skill.trim() && currentResume && !currentResume.skills.includes(skill.trim())) {
+    if (skill.trim() && currentResume && !currentResume.skills.some(s => s.name.toLowerCase() === skill.trim().toLowerCase())) {
+      const newSkill: Skill = {
+        name: skill.trim(),
+        category: 'technical',
+        level: 'intermediate'
+      };
       setCurrentResume(prev => prev ? {
         ...prev,
-        skills: [...prev.skills, skill.trim()]
+        skills: [...prev.skills, newSkill]
       } : null);
     }
   };
@@ -226,6 +329,35 @@ const ResumeBuilder: React.FC = () => {
     } : null);
   };
 
+  const updateSkills = (skills: Skill[]) => {
+    setCurrentResume(prev => prev ? {
+      ...prev,
+      skills
+    } : null);
+  };
+
+  // Drag and drop handlers
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setSectionOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over?.id as string);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // Get ordered sections for template rendering
+  const getOrderedSections = () => {
+    return sectionOrder.map(sectionKey => ({
+      key: sectionKey,
+      ...sections[sectionKey as keyof typeof sections]
+    }));
+  };
+
   const generateAiSummary = async () => {
     if (!currentResume) return;
     
@@ -233,7 +365,7 @@ const ResumeBuilder: React.FC = () => {
     try {
       // Create a simplified prompt based on current resume data
       const userBackground = `
-        Skills: ${currentResume.skills.join(', ')}
+        Skills: ${currentResume.skills.map(s => `${s.name} (${s.level})`).join(', ')}
         Experience: ${currentResume.experience.map(exp => `${exp.position} at ${exp.company}`).join(', ')}
         Education: ${currentResume.education.map(edu => `${edu.degree} in ${edu.field_of_study} from ${edu.institution}`).join(', ')}
       `.trim();
@@ -243,7 +375,7 @@ const ResumeBuilder: React.FC = () => {
         title: "Professional Role",
         company: "Generic Company",
         description: "Looking for a skilled professional",
-        requirements: currentResume.skills.slice(0, 3)
+        requirements: currentResume.skills.slice(0, 3).map(s => s.name)
       };
 
       const response = await apiService.generateResume({
@@ -255,13 +387,13 @@ const ResumeBuilder: React.FC = () => {
         updateResume({ professional_summary: response.professional_summary });
       } else {
         // Fallback to local generation if API fails
-        const aiSummary = `Results-driven professional with expertise in ${currentResume.skills.slice(0, 3).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
+        const aiSummary = `Results-driven professional with expertise in ${currentResume.skills.slice(0, 3).map(s => s.name).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
         updateResume({ professional_summary: aiSummary });
       }
     } catch (error) {
       console.error('Error generating AI summary:', error);
       // Fallback to local generation
-      const aiSummary = `Experienced professional with strong background in ${currentResume.skills.slice(0, 3).join(', ')}. Demonstrated ability to deliver results and drive innovation in dynamic environments.`;
+      const aiSummary = `Experienced professional with strong background in ${currentResume.skills.slice(0, 3).map(s => s.name).join(', ')}. Demonstrated ability to deliver results and drive innovation in dynamic environments.`;
       updateResume({ professional_summary: aiSummary });
     } finally {
       setIsAiLoading(false);
@@ -275,7 +407,8 @@ const ResumeBuilder: React.FC = () => {
     return React.createElement(template.component, {
       resume: currentResume,
       color,
-      font
+      font,
+      sectionOrder
     });
   };
 
@@ -443,26 +576,35 @@ const ResumeBuilder: React.FC = () => {
 
             {/* Section Navigation */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Sections</h3>
-              <nav className="space-y-2">
-                {sectionOrder.map((sectionKey) => {
-                  const section = sections[sectionKey as keyof typeof sections];
-                  return (
-                    <button
-                      key={sectionKey}
-                      onClick={() => setActiveSection(sectionKey)}
-                      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        activeSection === sectionKey
-                          ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-600'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="mr-3">{section.icon}</span>
-                      {section.name}
-                    </button>
-                  );
-                })}
-              </nav>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Sections</h3>
+                <span className="text-xs text-gray-500">Drag to reorder</span>
+              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={sectionOrder}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <nav className="space-y-2">
+                    {sectionOrder.map((sectionKey) => {
+                      const section = sections[sectionKey as keyof typeof sections];
+                      return (
+                        <SortableSection
+                          key={sectionKey}
+                          id={sectionKey}
+                          section={section}
+                          isActive={activeSection === sectionKey}
+                          onClick={() => setActiveSection(sectionKey)}
+                        />
+                      );
+                    })}
+                  </nav>
+                </SortableContext>
+              </DndContext>
             </div>
           </div>
 
@@ -602,45 +744,10 @@ const ResumeBuilder: React.FC = () => {
 
                 {/* Skills */}
                 {activeSection === 'skills' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Your Skills</label>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {currentResume.skills.map((skill, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                          >
-                            {skill}
-                            <button
-                              onClick={() => removeSkill(index)}
-                              className="ml-2 text-blue-600 hover:text-blue-800"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex space-x-2">
-                        <input
-                          type="text"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              addSkill(e.currentTarget.value);
-                              e.currentTarget.value = '';
-                            }
-                          }}
-                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Add a skill and press Enter"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Press Enter to add each skill
-                      </p>
-                    </div>
-                  </div>
+                  <SkillsBuilder 
+                    skills={currentResume.skills}
+                    onSkillsChange={updateSkills}
+                  />
                 )}
 
                 {/* Work Experience */}
