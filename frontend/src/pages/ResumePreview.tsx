@@ -24,7 +24,20 @@ const ResumePreview: React.FC = () => {
       website: 'yourportfolio.dev'
     },
     professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
-    skills: ['SQL', 'Python', 'R', 'Tableau', 'Power BI', 'Excel', 'Statistical Analysis', 'Data Visualization', 'Machine Learning', 'A/B Testing', 'Data Cleaning', 'ETL Processes'],
+    skills: [
+      { name: 'SQL', category: 'databases', level: 'advanced' },
+      { name: 'Python', category: 'technical', level: 'expert' },
+      { name: 'R', category: 'technical', level: 'advanced' },
+      { name: 'Tableau', category: 'tools', level: 'advanced' },
+      { name: 'Power BI', category: 'tools', level: 'intermediate' },
+      { name: 'Excel', category: 'tools', level: 'expert' },
+      { name: 'Statistical Analysis', category: 'technical', level: 'advanced' },
+      { name: 'Data Visualization', category: 'technical', level: 'advanced' },
+      { name: 'Machine Learning', category: 'technical', level: 'intermediate' },
+      { name: 'A/B Testing', category: 'technical', level: 'intermediate' },
+      { name: 'Data Cleaning', category: 'technical', level: 'advanced' },
+      { name: 'ETL Processes', category: 'technical', level: 'intermediate' }
+    ],
     experience: [
       {
         company: 'Data Insights Corp',
@@ -142,6 +155,12 @@ const ResumePreview: React.FC = () => {
   // Show a banner if using sample data
   const isUsingSampleData = !currentResume;
 
+  // Get section order from localStorage or use default
+  const [sectionOrder] = useState(() => {
+    const stored = localStorage.getItem('sectionOrder');
+    return stored ? JSON.parse(stored) : ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'];
+  });
+
   // Find the selected template component
   const SelectedTemplate = templates.find(t => t.id === selectedTemplate)?.component || templates[0].component;
 
@@ -211,7 +230,7 @@ const ResumePreview: React.FC = () => {
 
       <div className={`bg-white ${!isFullScreen ? 'shadow-lg rounded-lg p-8' : 'p-4 mx-auto max-w-4xl'} print:shadow-none print:p-0 print:max-w-none`}>
         <div className="relative">
-          <SelectedTemplate resume={resumeToDisplay} color={color} font={font} />
+          <SelectedTemplate resume={resumeToDisplay} color={color} font={font} sectionOrder={sectionOrder} />
           {isFullScreen && (
             <button 
               onClick={toggleFullScreen}
