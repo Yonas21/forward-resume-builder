@@ -9,6 +9,7 @@ import ResumeBuilder from './pages/ResumeBuilder';
 import ResumePreview from './pages/ResumePreview';
 import TemplatesPreview from './pages/TemplatesPreview';
 import TemplateSelection from './pages/TemplateSelection';
+import DragDropTest from './components/DragDropTest';
 import Signup from './components/Signup';
 import Login from './components/Login';
 import PasswordReset from './components/PasswordReset';
@@ -32,6 +33,7 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/templates" element={<TemplateSelection />} />
+            <Route path="/test-dnd" element={<DragDropTest />} />
             <Route path="/signup" element={
               <PublicRoute>
                 <Signup />
