@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     
+    # Development Settings
+    echo_sql: bool = False
+    
     class Config:
         env_file = ".env"
         case_sensitive = False
