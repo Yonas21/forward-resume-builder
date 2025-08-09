@@ -1,16 +1,21 @@
-import openai
 import json
-from typing import Dict, Any
-from models import Resume, JobDescription
 import os
-from dotenv import load_dotenv
+from typing import Dict, Any
 
-load_dotenv()
+from models import Resume, JobDescription
+from core.config import settings
+
+try:
+    # New SDK style; if unavailable, fallback will be handled in calls
+    from openai import OpenAI
+except Exception:  # pragma: no cover - fallback import for older SDKs
+    OpenAI = None  # type: ignore
+
 
 class OpenAIService:
     def __init__(self):
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-        self.model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+        self.model = settings.openai_model
+        self._client = OpenAI(api_key=settings.openai_api_key) if OpenAI else None
     
     async def parse_resume(self, resume_text: str, pre_processed_hints: Dict[str, Any] = None) -> Resume:
         """Parse resume text and extract structured information
@@ -105,15 +110,19 @@ class OpenAIService:
         """
         
         try:
-            response = openai.chat.completions.create(
+            if not self._client:
+                raise RuntimeError("OpenAI client not initialized")
+
+            response = self._client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a resume parsing expert. Extract structured information from resumes and return valid JSON. Pay special attention to the pre-processed hints provided, but verify all information against the original text."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1
+                temperature=0.1,
+                timeout=30,
             )
-            
+
             content = response.choices[0].message.content.strip()
             # Remove any markdown formatting if present
             if content.startswith("```json"):
@@ -125,6 +134,7 @@ class OpenAIService:
             return Resume(**parsed_data)
             
         except Exception as e:
+            # Consider raising a typed error for upstream handling
             print(f"Error parsing resume: {e}")
             return Resume()
     
@@ -153,15 +163,19 @@ class OpenAIService:
         """
         
         try:
-            response = openai.chat.completions.create(
+            if not self._client:
+                raise RuntimeError("OpenAI client not initialized")
+
+            response = self._client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional resume writer. Optimize resumes to match job descriptions while maintaining accuracy and professionalism."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3
+                temperature=0.3,
+                timeout=30,
             )
-            
+
             content = response.choices[0].message.content.strip()
             if content.startswith("```json"):
                 content = content[7:]
@@ -219,15 +233,19 @@ class OpenAIService:
         """
         
         try:
-            response = openai.chat.completions.create(
+            if not self._client:
+                raise RuntimeError("OpenAI client not initialized")
+
+            response = self._client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional resume writer. Create resume templates that match job requirements."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.5
+                temperature=0.5,
+                timeout=30,
             )
-            
+
             content = response.choices[0].message.content.strip()
             if content.startswith("```json"):
                 content = content[7:]

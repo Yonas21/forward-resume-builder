@@ -14,16 +14,16 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # Security
-    secret_key: str = "your-default-secret-key-change-in-production"
+    secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     
     # Database
-    mongodb_url: str = "mongodb://app_user:app_password@localhost:27017/resume_builder?authSource=resume_builder"
-    database_name: str = "resume_builder"
+    mongodb_url: str
+    database_name: str
     
     # OpenAI
-    openai_api_key: str = "your-openai-api-key"
+    openai_api_key: str
     openai_model: str = "gpt-3.5-turbo"
     
     # Server

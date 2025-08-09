@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface SignupRequest {
   email: string;
@@ -15,7 +15,7 @@ export interface LoginRequest {
 }
 
 export interface UserResponse {
-  id: number;
+  id: string;
   email: string;
   first_name?: string;
   last_name?: string;

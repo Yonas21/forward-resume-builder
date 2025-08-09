@@ -94,11 +94,17 @@ resume-builder/
    cp .env.example .env
    ```
 
-5. Add your OpenAI API key to `.env`:
-   ```
-   OPENAI_API_KEY=your_openai_api_key_here
-   OPENAI_MODEL=gpt-3.5-turbo
-   ```
+5. Configure environment variables in `.env` (do not commit secrets):
+```
+MONGODB_URL=mongodb://localhost:27017
+DATABASE_NAME=resume_builder
+SECRET_KEY=change-me-in-prod
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-3.5-turbo
+PORT=8000
+```
 
 6. Start the backend server:
    ```bash
@@ -107,6 +113,8 @@ resume-builder/
    
    The API will be available at `http://localhost:8000`
 
+Environment variables are required; defaults for `SECRET_KEY`, `MONGODB_URL`, and `OPENAI_API_KEY` are no longer hard-coded for safety.
+
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
@@ -114,9 +122,10 @@ resume-builder/
    cd resume-builder/frontend
    ```
 
-2. Install dependencies:
+2. Install dependencies and set API base URL (optional):
    ```bash
    npm install
+   echo "VITE_API_BASE_URL=http://localhost:8000" > .env
    ```
 
 3. Start the development server:
@@ -155,7 +164,7 @@ resume-builder/
 
 #### Authentication
 
-##### POST `/signup`
+##### POST `/auth/signup`
 Register a new user account.
 
 **Request Body:**
@@ -175,7 +184,7 @@ Register a new user account.
 }
 ```
 
-##### POST `/login`
+##### POST `/auth/login`
 Authenticate user and receive access token.
 
 **Request Body:**
@@ -196,7 +205,7 @@ Authenticate user and receive access token.
 
 #### Resume Processing
 
-##### POST `/parse-resume`
+##### POST `/resumes/ai/parse-resume`
 Parse uploaded resume file and extract structured information.
 
 **Headers:**
@@ -259,7 +268,7 @@ Parse uploaded resume file and extract structured information.
 }
 ```
 
-##### POST `/optimize-resume`
+##### POST `/resumes/ai/optimize-resume`
 Optimize resume content for a specific job description.
 
 **Request Body:**
@@ -292,7 +301,7 @@ Optimize resume content for a specific job description.
 }
 ```
 
-##### POST `/generate-resume`
+##### POST `/resumes/ai/generate-resume`
 Generate a new resume based on job description and user background.
 
 **Request Body:**
