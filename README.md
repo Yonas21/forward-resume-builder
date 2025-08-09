@@ -171,16 +171,25 @@ Register a new user account.
 ```json
 {
   "email": "user@example.com",
-  "hashed_password": "securepassword123"
+  "password": "securepassword123",
+  "first_name": "Jane",
+  "last_name": "Doe"
 }
 ```
 
 **Response:**
 ```json
 {
-  "id": 1,
-  "email": "user@example.com",
-  "hashed_password": "$2b$12$..."
+  "access_token": "...",
+  "token_type": "bearer",
+  "user": {
+    "id": "66d9f...",
+    "email": "user@example.com",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "created_at": "2024-01-15T10:30:00Z",
+    "is_active": true
+  }
 }
 ```
 
@@ -190,7 +199,7 @@ Authenticate user and receive access token.
 **Request Body:**
 ```json
 {
-  "username": "user@example.com",
+  "email": "user@example.com",
   "password": "securepassword123"
 }
 ```
@@ -199,7 +208,15 @@ Authenticate user and receive access token.
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
+  "token_type": "bearer",
+  "user": {
+    "id": "66d9f...",
+    "email": "user@example.com",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "created_at": "2024-01-15T10:30:00Z",
+    "is_active": true
+  }
 }
 ```
 
