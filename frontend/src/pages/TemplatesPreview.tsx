@@ -18,7 +18,20 @@ const TemplatesPreview: React.FC = () => {
       website: 'yourportfolio.dev'
     },
     professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
-    skills: ['SQL', 'Python', 'R', 'Tableau', 'Power BI', 'Excel', 'Statistical Analysis', 'Data Visualization', 'Machine Learning', 'A/B Testing', 'Data Cleaning', 'ETL Processes'],
+    skills: [
+      { name: 'SQL', category: 'language', level: 'expert' },
+      { name: 'Python', category: 'language', level: 'expert' },
+      { name: 'R', category: 'language', level: 'advanced' },
+      { name: 'Tableau', category: 'tools', level: 'expert' },
+      { name: 'Power BI', category: 'tools', level: 'advanced' },
+      { name: 'Excel', category: 'tools', level: 'expert' },
+      { name: 'Statistical Analysis', category: 'technical', level: 'expert' },
+      { name: 'Data Visualization', category: 'technical', level: 'expert' },
+      { name: 'Machine Learning', category: 'technical', level: 'advanced' },
+      { name: 'A/B Testing', category: 'technical', level: 'advanced' },
+      { name: 'Data Cleaning', category: 'technical', level: 'expert' },
+      { name: 'ETL Processes', category: 'technical', level: 'intermediate' },
+    ],
     experience: [
       {
         company: 'Data Insights Corp',

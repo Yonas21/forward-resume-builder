@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Resume, Experience, Education, Project, Certification, Skill } from '../types';
+import { useResumeStore } from '../store/resumeStore';
+
 import { templates } from '../components/TemplateConfig';
 import { apiService } from '../services/api';
 import SkillsBuilder from '../components/SkillsBuilder';
@@ -11,7 +12,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -78,7 +79,25 @@ const SortableSection: React.FC<SortableSectionProps> = ({ id, section, isActive
 
 const ResumeBuilder: React.FC = () => {
   const navigate = useNavigate();
-  const [currentResume, setCurrentResume] = useState<Resume | null>(null);
+  const {
+    resume,
+    
+    updatePersonalInfo,
+    updateProfessionalSummary,
+    addExperience,
+    updateExperience,
+    deleteExperience,
+    addEducation,
+    updateEducation,
+    deleteEducation,
+    addProject,
+    updateProject,
+    deleteProject,
+    addCertification,
+    updateCertification,
+    deleteCertification,
+  } = useResumeStore();
+
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#2563eb');
   const [selectedTemplate, setSelectedTemplate] = useState('basic');
@@ -128,7 +147,6 @@ const ResumeBuilder: React.FC = () => {
   ];
 
   useEffect(() => {
-    const storedResume = localStorage.getItem('currentResume');
     const storedTemplate = localStorage.getItem('selectedTemplate');
     const storedSectionOrder = localStorage.getItem('sectionOrder');
     
@@ -139,208 +157,12 @@ const ResumeBuilder: React.FC = () => {
     if (storedSectionOrder) {
       setSectionOrder(JSON.parse(storedSectionOrder));
     }
-    
-    if (storedResume) {
-      const parsedResume = JSON.parse(storedResume);
-      
-      // Migrate old skills structure (string[]) to new structure (Skill[])
-      if (parsedResume.skills && Array.isArray(parsedResume.skills)) {
-        if (parsedResume.skills.length > 0 && typeof parsedResume.skills[0] === 'string') {
-          // Convert old string skills to new Skill objects
-          parsedResume.skills = parsedResume.skills.map((skill: string) => ({
-            name: skill,
-            category: 'technical',
-            level: 'intermediate'
-          }));
-        }
-      }
-      
-      setCurrentResume(parsedResume);
-    } else {
-      // Initialize with empty resume
-      setCurrentResume({
-        personal_info: {
-          full_name: '',
-          email: '',
-          phone: '',
-          location: '',
-          linkedin: '',
-          github: '',
-          website: ''
-        },
-        professional_summary: '',
-        skills: [],
-        experience: [],
-        education: [],
-        projects: [],
-        certifications: []
-      });
-    }
   }, []);
-
-  // Save resume to localStorage whenever it changes
-  useEffect(() => {
-    if (currentResume) {
-      localStorage.setItem('currentResume', JSON.stringify(currentResume));
-    }
-  }, [currentResume]);
 
   // Save section order to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('sectionOrder', JSON.stringify(sectionOrder));
   }, [sectionOrder]);
-
-  const updateResume = (updates: Partial<Resume>) => {
-    setCurrentResume(prev => prev ? { ...prev, ...updates } : null);
-  };
-
-  const updatePersonalInfo = (field: string, value: string) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      personal_info: { ...prev.personal_info, [field]: value }
-    } : null);
-  };
-
-  const addExperience = () => {
-    const newExperience: Experience = {
-      company: '',
-      position: '',
-      start_date: '',
-      end_date: '',
-      description: [''],
-      is_current: false
-    };
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      experience: [...prev.experience, newExperience]
-    } : null);
-  };
-
-  const updateExperience = (index: number, updates: Partial<Experience>) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      experience: prev.experience.map((exp, i) => i === index ? { ...exp, ...updates } : exp)
-    } : null);
-  };
-
-  const deleteExperience = (index: number) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      experience: prev.experience.filter((_, i) => i !== index)
-    } : null);
-  };
-
-  const addEducation = () => {
-    const newEducation: Education = {
-      institution: '',
-      degree: '',
-      field_of_study: '',
-      start_date: '',
-      end_date: '',
-      gpa: ''
-    };
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      education: [...prev.education, newEducation]
-    } : null);
-  };
-
-  const updateEducation = (index: number, updates: Partial<Education>) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      education: prev.education.map((edu, i) => i === index ? { ...edu, ...updates } : edu)
-    } : null);
-  };
-
-  const deleteEducation = (index: number) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      education: prev.education.filter((_, i) => i !== index)
-    } : null);
-  };
-
-  const addProject = () => {
-    const newProject: Project = {
-      name: '',
-      description: '',
-      technologies: [],
-      url: ''
-    };
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      projects: [...prev.projects, newProject]
-    } : null);
-  };
-
-  const updateProject = (index: number, updates: Partial<Project>) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      projects: prev.projects.map((proj, i) => i === index ? { ...proj, ...updates } : proj)
-    } : null);
-  };
-
-  const deleteProject = (index: number) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      projects: prev.projects.filter((_, i) => i !== index)
-    } : null);
-  };
-
-  const addCertification = () => {
-    const newCert: Certification = {
-      name: '',
-      issuing_organization: '',
-      issue_date: '',
-      expiration_date: '',
-      credential_id: ''
-    };
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      certifications: [...prev.certifications, newCert]
-    } : null);
-  };
-
-  const updateCertification = (index: number, updates: Partial<Certification>) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      certifications: prev.certifications.map((cert, i) => i === index ? { ...cert, ...updates } : cert)
-    } : null);
-  };
-
-  const deleteCertification = (index: number) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      certifications: prev.certifications.filter((_, i) => i !== index)
-    } : null);
-  };
-
-  const addSkill = (skill: string) => {
-    if (skill.trim() && currentResume && !currentResume.skills.some(s => s.name.toLowerCase() === skill.trim().toLowerCase())) {
-      const newSkill: Skill = {
-        name: skill.trim(),
-        category: 'technical',
-        level: 'intermediate'
-      };
-      setCurrentResume(prev => prev ? {
-        ...prev,
-        skills: [...prev.skills, newSkill]
-      } : null);
-    }
-  };
-
-  const removeSkill = (index: number) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      skills: prev.skills.filter((_, i) => i !== index)
-    } : null);
-  };
-
-  const updateSkills = (skills: Skill[]) => {
-    setCurrentResume(prev => prev ? {
-      ...prev,
-      skills
-    } : null);
-  };
 
   // Drag and drop handlers
   const handleDragEnd = (event: DragEndEvent) => {
@@ -356,32 +178,24 @@ const ResumeBuilder: React.FC = () => {
     }
   };
 
-  // Get ordered sections for template rendering
-  const getOrderedSections = () => {
-    return sectionOrder.map(sectionKey => ({
-      key: sectionKey,
-      ...sections[sectionKey as keyof typeof sections]
-    }));
-  };
+  
 
   const generateAiSummary = async () => {
-    if (!currentResume) return;
+    if (!resume) return;
     
     setIsAiLoading(true);
     try {
-      // Create a simplified prompt based on current resume data
       const userBackground = `
-        Skills: ${currentResume.skills.map(s => `${s.name} (${s.level})`).join(', ')}
-        Experience: ${currentResume.experience.map(exp => `${exp.position} at ${exp.company}`).join(', ')}
-        Education: ${currentResume.education.map(edu => `${edu.degree} in ${edu.field_of_study} from ${edu.institution}`).join(', ')}
+        Skills: ${resume.skills.map(s => `${s.name} (${s.level})`).join(', ')}
+        Experience: ${resume.experience.map(exp => `${exp.position} at ${exp.company}`).join(', ')}
+        Education: ${resume.education.map(edu => `${edu.degree} in ${edu.field_of_study} from ${edu.institution}`).join(', ')}
       `.trim();
 
-      // Generate a fake job description for the AI to work with
       const fakeJobDescription = {
         title: "Professional Role",
         company: "Generic Company",
         description: "Looking for a skilled professional",
-        requirements: currentResume.skills.slice(0, 3).map(s => s.name)
+        requirements: resume.skills.slice(0, 3).map(s => s.name)
       };
 
       const response = await apiService.generateResume({
@@ -390,17 +204,15 @@ const ResumeBuilder: React.FC = () => {
       });
 
       if (response?.professional_summary) {
-        updateResume({ professional_summary: response.professional_summary });
+        updateProfessionalSummary(response.professional_summary);
       } else {
-        // Fallback to local generation if API fails
-        const aiSummary = `Results-driven professional with expertise in ${currentResume.skills.slice(0, 3).map(s => s.name).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
-        updateResume({ professional_summary: aiSummary });
+        const aiSummary = `Results-driven professional with expertise in ${resume.skills.slice(0, 3).map(s => s.name).join(', ')} and proven track record of delivering high-impact solutions. Passionate about innovation and continuous learning.`;
+        updateProfessionalSummary(aiSummary);
       }
     } catch (error) {
       console.error('Error generating AI summary:', error);
-      // Fallback to local generation
-      const aiSummary = `Experienced professional with strong background in ${currentResume.skills.slice(0, 3).map(s => s.name).join(', ')}. Demonstrated ability to deliver results and drive innovation in dynamic environments.`;
-      updateResume({ professional_summary: aiSummary });
+      const aiSummary = `Experienced professional with strong background in ${resume.skills.slice(0, 3).map(s => s.name).join(', ')}. Demonstrated ability to deliver results and drive innovation in dynamic environments.`;
+      updateProfessionalSummary(aiSummary);
     } finally {
       setIsAiLoading(false);
     }
@@ -408,17 +220,17 @@ const ResumeBuilder: React.FC = () => {
 
   const renderTemplatePreview = () => {
     const template = templates.find(t => t.id === selectedTemplate);
-    if (!template || !currentResume) return null;
+    if (!template || !resume) return null;
 
     return React.createElement(template.component, {
-      resume: currentResume,
+      resume: resume,
       color,
       font,
       sectionOrder
     });
   };
 
-  if (!currentResume) {
+  if (!resume) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -632,7 +444,7 @@ const ResumeBuilder: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                       <input
                         type="text"
-                        value={currentResume.personal_info.full_name}
+                        value={resume.personal_info.full_name}
                         onChange={(e) => updatePersonalInfo('full_name', e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="John Doe"
@@ -643,7 +455,7 @@ const ResumeBuilder: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                         <input
                           type="email"
-                          value={currentResume.personal_info.email}
+                          value={resume.personal_info.email}
                           onChange={(e) => updatePersonalInfo('email', e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="john@example.com"
@@ -653,7 +465,7 @@ const ResumeBuilder: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
                         <input
                           type="tel"
-                          value={currentResume.personal_info.phone}
+                          value={resume.personal_info.phone}
                           onChange={(e) => updatePersonalInfo('phone', e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="+1 (555) 123-4567"
@@ -664,7 +476,7 @@ const ResumeBuilder: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                       <input
                         type="text"
-                        value={currentResume.personal_info.location}
+                        value={resume.personal_info.location}
                         onChange={(e) => updatePersonalInfo('location', e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="New York, NY"
@@ -675,7 +487,7 @@ const ResumeBuilder: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
                         <input
                           type="url"
-                          value={currentResume.personal_info.linkedin}
+                          value={resume.personal_info.linkedin}
                           onChange={(e) => updatePersonalInfo('linkedin', e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="linkedin.com/in/johndoe"
@@ -685,7 +497,7 @@ const ResumeBuilder: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
                         <input
                           type="url"
-                          value={currentResume.personal_info.github}
+                          value={resume.personal_info.github}
                           onChange={(e) => updatePersonalInfo('github', e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="github.com/johndoe"
@@ -696,7 +508,7 @@ const ResumeBuilder: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
                       <input
                         type="url"
-                        value={currentResume.personal_info.website}
+                        value={resume.personal_info.website}
                         onChange={(e) => updatePersonalInfo('website', e.target.value)}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="johndoe.com"
@@ -711,19 +523,19 @@ const ResumeBuilder: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label>
                       <textarea
-                        value={currentResume.professional_summary}
-                        onChange={(e) => updateResume({ professional_summary: e.target.value })}
+                        value={resume.professional_summary}
+                        onChange={(e) => updateProfessionalSummary(e.target.value)}
                         rows={6}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         placeholder="Write a compelling summary that highlights your key strengths and career achievements..."
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        {currentResume.professional_summary.length}/500 characters
+                        {resume.professional_summary.length}/500 characters
                       </p>
                     </div>
                     <button
                       onClick={generateAiSummary}
-                      disabled={isAiLoading || currentResume.skills.length === 0}
+                      disabled={isAiLoading || resume.skills.length === 0}
                       className="w-full flex items-center justify-center px-4 py-3 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {isAiLoading ? (
@@ -740,7 +552,7 @@ const ResumeBuilder: React.FC = () => {
                         </>
                       )}
                     </button>
-                    {currentResume.skills.length === 0 && (
+                    {resume.skills.length === 0 && (
                       <p className="text-xs text-gray-500">
                         Add some skills first to get a better AI-generated summary
                       </p>
@@ -750,10 +562,7 @@ const ResumeBuilder: React.FC = () => {
 
                 {/* Skills */}
                 {activeSection === 'skills' && (
-                  <SkillsBuilder 
-                    skills={currentResume.skills}
-                    onSkillsChange={updateSkills}
-                  />
+                  <SkillsBuilder />
                 )}
 
                 {/* Work Experience */}
@@ -772,7 +581,7 @@ const ResumeBuilder: React.FC = () => {
                       </button>
                     </div>
                     
-                    {currentResume.experience.length === 0 ? (
+                    {resume.experience.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <div className="text-4xl mb-4">💼</div>
                         <h4 className="text-lg font-medium text-gray-900 mb-2">No work experience added yet</h4>
@@ -789,7 +598,7 @@ const ResumeBuilder: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {currentResume.experience.map((exp, index) => (
+                        {resume.experience.map((exp, index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
                             <button
                               onClick={() => deleteExperience(index)}
@@ -930,7 +739,7 @@ const ResumeBuilder: React.FC = () => {
                       </button>
                     </div>
                     
-                    {currentResume.education.length === 0 ? (
+                    {resume.education.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <div className="text-4xl mb-4">🎓</div>
                         <h4 className="text-lg font-medium text-gray-900 mb-2">No education added yet</h4>
@@ -947,7 +756,7 @@ const ResumeBuilder: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {currentResume.education.map((edu, index) => (
+                        {resume.education.map((edu, index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
                             <button
                               onClick={() => deleteEducation(index)}
@@ -1045,7 +854,7 @@ const ResumeBuilder: React.FC = () => {
                       </button>
                     </div>
                     
-                    {currentResume.projects.length === 0 ? (
+                    {resume.projects.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <div className="text-4xl mb-4">🚀</div>
                         <h4 className="text-lg font-medium text-gray-900 mb-2">No projects added yet</h4>
@@ -1062,7 +871,7 @@ const ResumeBuilder: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {currentResume.projects.map((project, index) => (
+                        {resume.projects.map((project, index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
                             <button
                               onClick={() => deleteProject(index)}
@@ -1168,7 +977,7 @@ const ResumeBuilder: React.FC = () => {
                       </button>
                     </div>
                     
-                    {currentResume.certifications.length === 0 ? (
+                    {resume.certifications.length === 0 ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                         <div className="text-4xl mb-4">🏆</div>
                         <h4 className="text-lg font-medium text-gray-900 mb-2">No certifications added yet</h4>
@@ -1185,7 +994,7 @@ const ResumeBuilder: React.FC = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {currentResume.certifications.map((cert, index) => (
+                        {resume.certifications.map((cert, index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-6 relative">
                             <button
                               onClick={() => deleteCertification(index)}
@@ -1300,4 +1109,3 @@ const ResumeBuilder: React.FC = () => {
 };
 
 export default ResumeBuilder;
-

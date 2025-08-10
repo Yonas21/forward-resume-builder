@@ -1,50 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
-  const { login } = useAuth();
+  
+  const { login, isLoading, error, clearError } = useAuthStore();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    // Clear any existing auth errors when the component mounts
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError('');
+    if (error) clearError();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
-      setError('Please fill in all fields');
+      // You might want to handle this with a local error state if you prefer
       return;
     }
 
-    setIsLoading(true);
-    setError('');
-
     try {
-      await login(
-         formData.email,
-         formData.password
-      );
+      await login({
+         email: formData.email,
+         password: formData.password
+      });
       
       console.log('Login successful');
       navigate(from, { replace: true });
-    } catch (error: any) {
-      console.error('Login failed:', error);
-      setError(error.message || 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      // Error is already set in the store, just log it
+      console.error('Login failed:', err);
     }
   };
 

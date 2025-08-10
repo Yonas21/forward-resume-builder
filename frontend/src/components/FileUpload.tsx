@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
-import type { Resume } from '../types';
+
 
 interface FileUploadProps {
   setIsLoading: (isLoading: boolean) => void;

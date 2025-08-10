@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, isLoading, error, clearError } = useAuthStore();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -12,52 +12,58 @@ const Signup: React.FC = () => {
     firstName: '',
     lastName: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    // Clear any existing auth errors when the component mounts
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear specific error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    // Clear specific validation error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    // Clear global auth error as well
+    if (error) {
+      clearError();
     }
   };
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!/^[^克分@]+@[^克分@]+克分.克分@+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters long';
-    } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
+    } else if (!/(?=.*[a-zA-Z])(?=.*克分克分)/.test(formData.password)) {
       newErrors.password = 'Password must contain at least one letter and one number';
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    // First name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
 
-    setErrors(newErrors);
+    setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -67,9 +73,6 @@ const Signup: React.FC = () => {
     if (!validateForm()) {
       return;
     }
-
-    setIsLoading(true);
-    setErrors({});
 
     try {
       await signup({
@@ -81,17 +84,16 @@ const Signup: React.FC = () => {
       
       console.log('Signup successful');
       navigate('/');
-    } catch (error: any) {
-      console.error('Signup failed:', error);
-      if (error.message.includes('already exists')) {
-        setErrors({ email: 'An account with this email already exists' });
-      } else {
-        setErrors({ general: error.message || 'Signup failed. Please try again.' });
+    } catch (err: any) {
+      console.error('Signup failed:', err);
+      // The error from the store is already set, but we can check for specific messages
+      if (err.message.includes('already exists')) {
+        setValidationErrors({ email: 'An account with this email already exists' });
       }
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const displayError = validationErrors.general || error;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -122,13 +124,13 @@ const Signup: React.FC = () => {
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white py-8 px-6 shadow-xl rounded-xl space-y-6">
-            {errors.general && (
+            {displayError && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex">
                   <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-sm text-red-600">{errors.general}</p>
+                  <p className="text-sm text-red-600">{displayError}</p>
                 </div>
               </div>
             )}
@@ -146,13 +148,11 @@ const Signup: React.FC = () => {
                   required
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.firstName ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.firstName ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="John"
                 />
-                {errors.firstName && (
-                  <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>
+                {validationErrors.firstName && (
+                  <p className="mt-1 text-xs text-red-600">{validationErrors.firstName}</p>
                 )}
               </div>
 
@@ -185,13 +185,11 @@ const Signup: React.FC = () => {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.email ? 'border-red-300' : 'border-gray-300'}`}
                 placeholder="john@example.com"
               />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+              {validationErrors.email && (
+                <p className="mt-1 text-xs text-red-600">{validationErrors.email}</p>
               )}
             </div>
 
@@ -208,9 +206,7 @@ const Signup: React.FC = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.password ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Create a strong password"
                 />
                 <button
@@ -230,8 +226,8 @@ const Signup: React.FC = () => {
                   )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+              {validationErrors.password && (
+                <p className="mt-1 text-xs text-red-600">{validationErrors.password}</p>
               )}
               <p className="mt-1 text-xs text-gray-500">
                 Must be at least 8 characters with letters and numbers
@@ -251,9 +247,7 @@ const Signup: React.FC = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Confirm your password"
                 />
                 <button
@@ -273,8 +267,8 @@ const Signup: React.FC = () => {
                   )}
                 </button>
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>
+              {validationErrors.confirmPassword && (
+                <p className="mt-1 text-xs text-red-600">{validationErrors.confirmPassword}</p>
               )}
             </div>
 
@@ -289,7 +283,7 @@ const Signup: React.FC = () => {
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                 I agree to the{' '}
                 <a href="#" className="text-blue-600 hover:text-blue-500">Terms of Service</a>
-                {' '}and{' '}
+                {' ' }and{' '}
                 <a href="#" className="text-blue-600 hover:text-blue-500">Privacy Policy</a>
               </label>
             </div>

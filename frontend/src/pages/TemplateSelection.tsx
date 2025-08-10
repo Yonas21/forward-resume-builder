@@ -60,7 +60,12 @@ const TemplateSelection: React.FC = () => {
         website: 'johndoe.com'
       },
       professional_summary: 'Experienced professional with expertise in modern technologies and proven track record of success.',
-      skills: ['JavaScript', 'React', 'Node.js', 'Python'],
+      skills: [
+        { name: 'JavaScript', category: 'language', level: 'advanced' },
+        { name: 'React', category: 'framework', level: 'advanced' },
+        { name: 'Node.js', category: 'framework', level: 'intermediate' },
+        { name: 'Python', category: 'language', level: 'intermediate' },
+      ],
       experience: [{
         company: 'Tech Corp',
         position: 'Senior Developer',

@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
-
-export interface Skill {
-  name: string;
-  category: string;
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-}
-
-interface SkillsBuilderProps {
-  skills: Skill[];
-  onSkillsChange: (skills: Skill[]) => void;
-}
+import { useResumeStore } from '../store/resumeStore';
+import type { Skill } from '../types';
 
 const skillCategories = [
   { id: 'technical', name: 'Technical Skills', icon: '💻' },
@@ -65,7 +56,10 @@ const skillLevels = [
   { value: 'expert', label: 'Expert', color: 'bg-red-100 text-red-800' }
 ];
 
-const SkillsBuilder: React.FC<SkillsBuilderProps> = ({ skills, onSkillsChange }) => {
+const SkillsBuilder: React.FC = () => {
+  const skills = useResumeStore(state => state.resume.skills);
+  const updateSkills = useResumeStore(state => state.updateSkills);
+  
   const [newSkill, setNewSkill] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('technical');
   const [selectedLevel, setSelectedLevel] = useState<'beginner' | 'intermediate' | 'advanced' | 'expert'>('intermediate');
@@ -78,25 +72,25 @@ const SkillsBuilder: React.FC<SkillsBuilderProps> = ({ skills, onSkillsChange })
         category: selectedCategory,
         level: selectedLevel
       };
-      onSkillsChange([...skills, newSkillObj]);
+      updateSkills([...skills, newSkillObj]);
       setNewSkill('');
     }
   };
 
   const removeSkill = (index: number) => {
-    onSkillsChange(skills.filter((_, i) => i !== index));
+    updateSkills(skills.filter((_, i) => i !== index));
   };
 
   const updateSkillLevel = (index: number, level: Skill['level']) => {
     const updatedSkills = [...skills];
     updatedSkills[index].level = level;
-    onSkillsChange(updatedSkills);
+    updateSkills(updatedSkills);
   };
 
   const updateSkillCategory = (index: number, category: string) => {
     const updatedSkills = [...skills];
     updatedSkills[index].category = category;
-    onSkillsChange(updatedSkills);
+    updateSkills(updatedSkills);
   };
 
   const getCategoryIcon = (categoryId: string) => {
