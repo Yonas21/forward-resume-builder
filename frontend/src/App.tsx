@@ -1,13 +1,13 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ResumePreview from './pages/ResumePreview';
-import TemplatesPreview from './pages/TemplatesPreview';
+
 import TemplateSelection from './pages/TemplateSelection';
 import DragDropTest from './components/DragDropTest';
 import Signup from './components/Signup';
@@ -16,7 +16,7 @@ import PasswordReset from './components/PasswordReset';
 
 function App() {
   return (
-    <AuthProvider>
+    
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Navbar />
@@ -53,7 +53,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </AuthProvider>
+    
   );
 }
 
