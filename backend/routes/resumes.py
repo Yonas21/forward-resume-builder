@@ -11,7 +11,7 @@ from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem
 from database import User
 from db_service import ResumeService
 from routes.auth import get_current_user
-from openai_service import openai_service
+from gemini_service import gemini_service
 from file_parser import file_parser
 
 logger = logging.getLogger(__name__)
@@ -218,15 +218,17 @@ async def parse_resume(file: UploadFile = File(...)):
     try:
         file_content = await file.read()
         resume_text = file_parser.parse_file(file.filename, file_content)
+        print("resume_text***************", resume_text)
         
         if not resume_text:
             raise HTTPException(status_code=400, detail="Failed to parse the uploaded file")
         
         pre_processed_data = file_parser.pre_process_resume(resume_text)
-        structured_resume = await openai_service.parse_resume(
-            resume_text, 
+        structured_resume = await gemini_service.parse_resume(
+            resume_text,
             pre_processed_hints=pre_processed_data
         )
+        print("******structured_resume******",structured_resume)
         
         return structured_resume
     except HTTPException:

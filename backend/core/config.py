@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str
     openai_model: str = "gpt-3.5-turbo"
+
+    # Groq
+    groq_api_key: str
+    groq_model: str = "llama3-8b-8192"
+
+    # Gemini
+    gemini_api_key: str
+    gemini_model: str = "gemini-1.5-flash"
     
     # Server
     host: str = "0.0.0.0"
