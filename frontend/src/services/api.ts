@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { Resume, OptimizeResumeRequest, GenerateResumeRequest, Skill } from '../types';
-import type { SignupRequest, LoginRequest, AuthResponse, UserResponse } from '../types/auth';
+import type { SignupRequest, LoginRequest, AuthResponse } from '../types/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
