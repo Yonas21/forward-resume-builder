@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { templates } from '../components/TemplateConfig';
 import { apiService } from '../services/api';
+import { useToast } from '../components/ToastProvider';
 import { useResumeStore } from '../store/resumeStore';
+import { useResumeManagerStore } from '../store/resumeManagerStore';
 import type { JobDescription, Resume } from '../types';
 
 const TemplateSelection: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const { setResume } = useResumeStore();
+  const { createResume, setActiveResume } = useResumeManagerStore();
   const currentResume = useResumeStore((s) => s.resume);
   const [activeTab, setActiveTab] = useState<'templates' | 'upload' | 'generate'>('templates');
   const [selectedTemplate, setSelectedTemplate] = useState('basic');
@@ -127,6 +131,16 @@ const TemplateSelection: React.FC = () => {
       projects: [],
       certifications: []
     });
+    const created = createResume('New Resume', {
+      personal_info: { full_name: '', email: '', phone: '', location: '', linkedin: '', github: '', website: '' },
+      professional_summary: '',
+      skills: [],
+      experience: [],
+      education: [],
+      projects: [],
+      certifications: []
+    });
+    setActiveResume(created.id);
     navigate('/builder');
   };
 
@@ -165,11 +179,13 @@ const TemplateSelection: React.FC = () => {
     try {
       const parsedResume = await apiService.parseResume(selectedFile);
       setResume(parsedResume);
+      const created = createResume(`${parsedResume.personal_info?.full_name || 'Imported'} Resume`, parsedResume);
+      setActiveResume(created.id);
       localStorage.setItem('selectedTemplate', selectedTemplate);
       navigate('/builder');
     } catch (error) {
       console.error('Error parsing resume:', error);
-      alert('Failed to parse resume. Please try again.');
+      toast.error('Failed to parse resume. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -184,12 +200,14 @@ const TemplateSelection: React.FC = () => {
           if (event.target?.result) {
             const jsonData = JSON.parse(event.target.result as string);
             setResume(jsonData);
+            const created = createResume(`${jsonData?.personal_info?.full_name || 'Imported'} Resume`, jsonData);
+            setActiveResume(created.id);
             localStorage.setItem('selectedTemplate', selectedTemplate);
             navigate('/builder');
           }
         } catch (error) {
           console.error('Error parsing JSON file:', error);
-          alert('Failed to parse JSON file. Please ensure it\'s a valid JSON format.');
+          toast.error('Invalid JSON. Please ensure it\'s a valid resume JSON.');
         }
       };
       reader.readAsText(file);
@@ -218,13 +236,16 @@ const TemplateSelection: React.FC = () => {
       }
 
       setResume(result);
+      const name = tailorExisting ? `${result.personal_info?.full_name || 'Tailored'} Resume` : `${jobDescription.title} @ ${jobDescription.company}`;
+      const created = createResume(name, result);
+      setActiveResume(created.id);
       localStorage.setItem('selectedProfession', profession);
       // Force Basic template as requested
       localStorage.setItem('selectedTemplate', 'basic');
       navigate('/builder');
     } catch (error) {
       console.error('Error generating resume:', error);
-      alert('Failed to generate resume. Please try again.');
+      toast.error('Failed to generate resume. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -246,10 +267,10 @@ const TemplateSelection: React.FC = () => {
           </button>
           
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Choose Your Path to Success
+            Build, Tailor, and Switch Between Resumes Fast
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Select a professional template and get started with your resume journey
+            Clarify your value with AI-tailored content and ATS-friendly templates. Create multiple versions per job.
           </p>
         </div>
 

@@ -10,3 +10,29 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Print styles for browser export */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .no-print { display: none !important; }
+  .print\:shadow-none { box-shadow: none !important; }
+  .print\:p-0 { padding: 0 !important; }
+  .print\:max-w-none { max-width: none !important; }
+  /* Reduce widows/orphans visually by avoiding isolated lines */
+  h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
+  p, ul, li { orphans: 3; widows: 3; }
+  .avoid-break { page-break-inside: avoid; }
+}
+
+/* High contrast theme (basic token hook) */
+[data-theme='hc'] {
+  --text: #000;
+  --bg: #fff;
+  --primary: #000;
+}
+[data-theme='hc'] body,
+[data-theme='hc'] .text-gray-900 { color: var(--text) !important; }
+[data-theme='hc'] .bg-gray-50 { background-color: var(--bg) !important; }

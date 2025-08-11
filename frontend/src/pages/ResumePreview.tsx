@@ -13,7 +13,13 @@ const ResumePreview: React.FC = () => {
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#333');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [zoom, setZoom] = useState(95);
   const [showPrintGuide, setShowPrintGuide] = useState(false);
+  const [pagePadding, setPagePadding] = useState<number>(() => {
+    const stored = localStorage.getItem('pagePaddingPx');
+    return stored ? parseInt(stored, 10) : 32;
+  });
+  const [showGrid, setShowGrid] = useState<boolean>(() => localStorage.getItem('showGridOverlay') === 'true');
   
   // Sample resume data for preview when no resume is available - Data Analyst template
   const sampleResume: Resume = {
@@ -266,13 +272,52 @@ const ResumePreview: React.FC = () => {
 
       <div className={`${!isFullScreen ? 'p-0' : 'p-4 mx-auto'} print:p-0 print:max-w-none`}>
         <div className="relative flex justify-center">
+          <div className="no-print absolute -top-12 right-0 flex items-center space-x-2">
+            <label htmlFor="preview-zoom" className="sr-only">Zoom</label>
+            <select
+              id="preview-zoom"
+              className="px-2 py-1 border border-gray-300 rounded text-sm"
+              value={zoom}
+              onChange={(e) => setZoom(parseInt(e.target.value, 10))}
+            >
+              <option value={90}>90%</option>
+              <option value={95}>95%</option>
+              <option value={100}>100%</option>
+              <option value={125}>125%</option>
+              <option value={150}>150%</option>
+            </select>
+            <label htmlFor="preview-padding" className="sr-only">Padding</label>
+            <input
+              id="preview-padding"
+              type="range"
+              min={16}
+              max={64}
+              step={4}
+              value={pagePadding}
+              onChange={(e) => setPagePadding(parseInt(e.target.value, 10))}
+            />
+            <label className="inline-flex items-center space-x-1">
+              <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />
+              <span className="text-xs text-gray-600">Grid</span>
+            </label>
+          </div>
           <div
-            className={`bg-white shadow-lg ${!isFullScreen ? 'rounded-lg origin-top transform scale-95 lg:scale-90' : ''} print:shadow-none`}
-            style={{ width: '816px', minHeight: '1056px' }}
+            className={`bg-white shadow-lg ${!isFullScreen ? 'rounded-lg origin-top transform' : ''} print:shadow-none`}
+            style={{ width: '816px', minHeight: '1056px', scale: `${zoom}%` as any }}
           >
-            <div className={`p-8 ${font}`}>
+            <div className={`${font}`} style={{ padding: pagePadding }}>
               <SelectedTemplate resume={resumeToDisplay} color={color} font={font} sectionOrder={sectionOrder} />
             </div>
+            {showGrid && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage:
+                    'repeating-linear-gradient(0deg, rgba(59,130,246,0.08), rgba(59,130,246,0.08) 1px, transparent 1px, transparent 8px), repeating-linear-gradient(90deg, rgba(59,130,246,0.08), rgba(59,130,246,0.08) 1px, transparent 1px, transparent 8px)'
+                }}
+              />
+            )}
           </div>
           {isFullScreen && (
             <button 

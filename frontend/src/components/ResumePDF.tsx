@@ -5,18 +5,13 @@ import {
   Text,
   View,
   StyleSheet,
-  
-  
 } from '@react-pdf/renderer';
 import type { Resume } from '../types';
 
-// Register fonts (optional - you can use default fonts)
-// Font.register({
-//   family: 'Helvetica',
-//   src: 'Helvetica',
-// });
+// Optional custom font registration for brand look
+// To use, place fonts in /public/fonts and call Font.register here.
 
-const createStyles = (accentColor: string, fontFamily: 'Helvetica' | 'Times-Roman' | 'Courier') =>
+const createStyles = (accentColor: string, fontFamily: string) =>
   StyleSheet.create({
     page: {
       flexDirection: 'column',
@@ -156,8 +151,8 @@ interface ResumePDFProps {
 }
 
 const ResumePDF: React.FC<ResumePDFProps> = ({ resume, sectionOrder = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'], color = '#333333', font = 'font-sans' }) => {
-  const pdfFont: 'Helvetica' | 'Times-Roman' | 'Courier' =
-    font === 'font-serif' ? 'Times-Roman' : font === 'font-mono' ? 'Courier' : 'Helvetica';
+  // Map UI font to PDF font. If you register a custom font (e.g., Inter), use that here.
+  const pdfFont = font === 'font-serif' ? 'Times-Roman' : font === 'font-mono' ? 'Courier' : 'Helvetica';
   const styles = createStyles(color, pdfFont);
   const renderSection = (sectionKey: string) => {
     switch (sectionKey) {

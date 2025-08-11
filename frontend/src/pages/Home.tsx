@@ -30,9 +30,9 @@ const Home: React.FC = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"> Dream Resume</span>
           </h1>
           
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Create ATS-friendly, professional resumes in minutes with AI assistance. 
-            Choose from premium templates, customize every detail, and land your dream job.
+          <p className="text-xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed">
+            For job seekers, career switchers, and students. Generate or tailor resumes that match job descriptions, 
+            formatted for ATS so your skills get seen.
           </p>
 
           {/* Feature Stats */}
@@ -52,6 +52,27 @@ const Home: React.FC = () => {
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">Free</div>
               <div className="text-gray-600">Forever</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 3-step Flow */}
+        <div className="max-w-5xl mx-auto mb-16">
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-semibold mx-auto mb-3 flex items-center justify-center">1</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Paste Job or Upload</h3>
+              <p className="text-sm text-gray-600">Paste a job description to generate or upload your existing resume to tailor.</p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-semibold mx-auto mb-3 flex items-center justify-center">2</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Customize in Builder</h3>
+              <p className="text-sm text-gray-600">Pick a template, reorder sections, tweak content with AI suggestions.</p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-semibold mx-auto mb-3 flex items-center justify-center">3</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Export ATS-Ready</h3>
+              <p className="text-sm text-gray-600">Download PDF/JSON. Create multiple versions and switch fast per job.</p>
             </div>
           </div>
         </div>

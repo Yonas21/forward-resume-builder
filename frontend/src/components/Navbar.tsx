@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useResumeManagerStore } from '../store/resumeManagerStore';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { resumes, activeResumeId, setActiveResume } = useResumeManagerStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,23 @@ const Navbar: React.FC = () => {
               </Link>
               {isAuthenticated && (
                 <>
+                  {/* Quick resume switcher */}
+                  {resumes.length > 0 && (
+                    <div className="relative">
+                      <label htmlFor="resume-switcher" className="sr-only">Active resume</label>
+                      <select
+                        id="resume-switcher"
+                        value={activeResumeId ?? ''}
+                        onChange={(e) => setActiveResume(e.target.value)}
+                        className="px-3 py-2 rounded-md text-sm border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        aria-label="Switch active resume"
+                      >
+                        {resumes.map((r) => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <Link
                     to="/builder"
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${

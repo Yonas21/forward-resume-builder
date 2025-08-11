@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useResumeStore } from '../store/resumeStore';
+import { useToast } from './ToastProvider';
 
 
 interface FileUploadProps {
@@ -10,6 +11,7 @@ interface FileUploadProps {
 
 const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { setResume } = useResumeStore();
@@ -52,7 +54,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
       navigate('/builder');
     } catch (error) {
       console.error('Error parsing resume:', error);
-      alert('Failed to parse resume. Please try again.');
+      toast.error('Failed to parse resume. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +74,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
           }
         } catch (error) {
           console.error('Error parsing JSON file:', error);
-          alert('Failed to parse JSON file. Please ensure it\'s a valid JSON format.');
+          toast.error('Invalid JSON. Please ensure it\'s a valid resume JSON.');
         }
       };
       reader.readAsText(file);
