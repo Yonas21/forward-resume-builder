@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { templates } from '../components/TemplateConfig';
 import { apiService } from '../services/api';
+import { useResumeStore } from '../store/resumeStore';
 import type { JobDescription, Resume } from '../types';
 
 const TemplateSelection: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setResume } = useResumeStore();
+  const currentResume = useResumeStore((s) => s.resume);
   const [activeTab, setActiveTab] = useState<'templates' | 'upload' | 'generate'>('templates');
   const [selectedTemplate, setSelectedTemplate] = useState('basic');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +27,7 @@ const TemplateSelection: React.FC = () => {
   });
   const [userBackground, setUserBackground] = useState('');
   const [profession, setProfession] = useState('');
+  const [tailorExisting, setTailorExisting] = useState(false);
   
   const professions = [
     'Software Developer',
@@ -46,6 +50,20 @@ const TemplateSelection: React.FC = () => {
       setActiveTab(resumeFlow as 'upload' | 'generate');
     }
   }, [location.state]);
+
+  // Determine if the store resume has meaningful data
+  const isResumeEmpty = (r: Resume | null | undefined) => {
+    if (!r) return true;
+    const hasName = Boolean(r.personal_info?.full_name?.trim());
+    const hasSummary = Boolean(r.professional_summary?.trim());
+    const hasAnyList = (r.skills?.length || 0) > 0 || (r.experience?.length || 0) > 0 || (r.education?.length || 0) > 0 || (r.projects?.length || 0) > 0 || (r.certifications?.length || 0) > 0;
+    return !(hasName || hasSummary || hasAnyList);
+  };
+
+  // Default the toggle based on whether there is an existing resume
+  useEffect(() => {
+    setTailorExisting(!isResumeEmpty(currentResume));
+  }, [currentResume]);
 
   // Template thumbnail generator
   const generateThumbnail = (template: any) => {
@@ -99,7 +117,16 @@ const TemplateSelection: React.FC = () => {
 
   const handleStartWithTemplate = () => {
     localStorage.setItem('selectedTemplate', selectedTemplate);
-    localStorage.removeItem('currentResume'); // Start fresh
+    // Reset the store to an empty resume by setting an empty shape
+    setResume({
+      personal_info: { full_name: '', email: '', phone: '', location: '', linkedin: '', github: '', website: '' },
+      professional_summary: '',
+      skills: [],
+      experience: [],
+      education: [],
+      projects: [],
+      certifications: []
+    });
     navigate('/builder');
   };
 
@@ -137,7 +164,7 @@ const TemplateSelection: React.FC = () => {
     setIsLoading(true);
     try {
       const parsedResume = await apiService.parseResume(selectedFile);
-      localStorage.setItem('currentResume', JSON.stringify(parsedResume));
+      setResume(parsedResume);
       localStorage.setItem('selectedTemplate', selectedTemplate);
       navigate('/builder');
     } catch (error) {
@@ -156,7 +183,7 @@ const TemplateSelection: React.FC = () => {
         try {
           if (event.target?.result) {
             const jsonData = JSON.parse(event.target.result as string);
-            localStorage.setItem('currentResume', JSON.stringify(jsonData));
+            setResume(jsonData);
             localStorage.setItem('selectedTemplate', selectedTemplate);
             navigate('/builder');
           }
@@ -177,13 +204,23 @@ const TemplateSelection: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const generatedResume = await apiService.generateResume({
-        job_description: jobDescription,
-        user_background: userBackground || undefined
-      });
-      localStorage.setItem('currentResume', JSON.stringify(generatedResume));
+      let result: Resume;
+      if (tailorExisting && !isResumeEmpty(currentResume)) {
+        result = await apiService.optimizeResume({
+          resume: currentResume,
+          job_description: jobDescription,
+        });
+      } else {
+        result = await apiService.generateResume({
+          job_description: jobDescription,
+          user_background: userBackground || undefined,
+        });
+      }
+
+      setResume(result);
       localStorage.setItem('selectedProfession', profession);
-      localStorage.setItem('selectedTemplate', selectedTemplate);
+      // Force Basic template as requested
+      localStorage.setItem('selectedTemplate', 'basic');
       navigate('/builder');
     } catch (error) {
       console.error('Error generating resume:', error);
@@ -449,11 +486,29 @@ const TemplateSelection: React.FC = () => {
                       AI-Generated Resume
                     </h2>
                     <p className="text-gray-600">
-                      Provide job details and let AI create a tailored resume with the {templates.find(t => t.id === selectedTemplate)?.name} template
+                      Provide job details and let AI create a tailored resume with the Basic template
                     </p>
                   </div>
 
                   <div className="space-y-6">
+                    {/* Tailor Existing Toggle */}
+                    <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Tailor my existing resume</p>
+                        <p className="text-xs text-gray-600">If enabled, AI will optimize your current resume for this job. Otherwise, it will generate a new one.</p>
+                      </div>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={tailorExisting}
+                          onChange={(e) => setTailorExisting(e.target.checked)}
+                          disabled={isResumeEmpty(currentResume)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 relative"></div>
+                      </label>
+                    </div>
+
                     {/* Profession Selection */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

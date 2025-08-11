@@ -41,15 +41,16 @@ const Signup: React.FC = () => {
 
     if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^克分@]+@[^克分@]+克分.克分@+$/.test(formData.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
+
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters long';
-    } else if (!/(?=.*[a-zA-Z])(?=.*克分克分)/.test(formData.password)) {
+    } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password = 'Password must contain at least one letter and one number';
     }
 

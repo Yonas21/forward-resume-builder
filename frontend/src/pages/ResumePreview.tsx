@@ -5,9 +5,10 @@ import { FiDownload, FiPrinter, FiFileText, FiMaximize, FiMinimize, FiEdit } fro
 import { Link } from 'react-router-dom';
 import { pdf } from '@react-pdf/renderer';
 import ResumePDF from '../components/ResumePDF';
+import { useResumeStore } from '../store/resumeStore';
 
 const ResumePreview: React.FC = () => {
-  const [currentResume, setCurrentResume] = useState<Resume | null>(null);
+  const storeResume = useResumeStore((s) => s.resume);
   const [selectedTemplate, setSelectedTemplate] = useState('data-analyst');
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#333');
@@ -107,18 +108,9 @@ const ResumePreview: React.FC = () => {
   };
 
   useEffect(() => {
-    const storedResume = localStorage.getItem('currentResume');
     const storedFont = localStorage.getItem('resumeFont') || localStorage.getItem('selectedFont');
     const storedColor = localStorage.getItem('resumeColor') || localStorage.getItem('selectedColor');
     const storedTemplate = localStorage.getItem('selectedTemplate');
-
-    if (storedResume) {
-      try {
-        setCurrentResume(JSON.parse(storedResume));
-      } catch (error) {
-        console.error('Error parsing stored resume:', error);
-      }
-    }
 
     if (storedFont) {
       setFont(storedFont);
@@ -139,8 +131,8 @@ const ResumePreview: React.FC = () => {
 
   const handleExportPDF = async () => {
     try {
-      const resumeToExport = currentResume || sampleResume;
-      const pdfDoc = <ResumePDF resume={resumeToExport} sectionOrder={sectionOrder} />;
+      const resumeToExport = resumeToDisplay;
+          const pdfDoc = <ResumePDF resume={resumeToExport} sectionOrder={sectionOrder} color={color} font={font as any} />;
       const blob = await pdf(pdfDoc).toBlob();
       
       const url = URL.createObjectURL(blob);
@@ -158,12 +150,12 @@ const ResumePreview: React.FC = () => {
   };
 
   const handleExportJson = () => {
-    if (!currentResume) return;
+    if (!resumeToDisplay) return;
 
-    const dataStr = JSON.stringify(currentResume, null, 2);
+    const dataStr = JSON.stringify(resumeToDisplay, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `${currentResume?.personal_info?.full_name?.replace(/\s+/g, '_')}_resume.json`;
+    const exportFileDefaultName = `${resumeToDisplay?.personal_info?.full_name?.replace(/\s+/g, '_')}_resume.json`;
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -171,11 +163,19 @@ const ResumePreview: React.FC = () => {
     linkElement.click();
   };
 
-  // Use sample resume if no resume is available
-  const resumeToDisplay = currentResume || sampleResume;
+  // Decide whether to use sample or store data
+  const isResumeEmpty = (r: Resume | null | undefined) => {
+    if (!r) return true;
+    const hasName = Boolean(r.personal_info?.full_name?.trim());
+    const hasSummary = Boolean(r.professional_summary?.trim());
+    const hasAnyList = (r.skills?.length || 0) > 0 || (r.experience?.length || 0) > 0 || (r.education?.length || 0) > 0 || (r.projects?.length || 0) > 0 || (r.certifications?.length || 0) > 0;
+    return !(hasName || hasSummary || hasAnyList);
+  };
+
+  const resumeToDisplay = isResumeEmpty(storeResume) ? sampleResume : storeResume;
   
   // Show a banner if using sample data
-  const isUsingSampleData = !currentResume;
+  const isUsingSampleData = isResumeEmpty(storeResume);
 
   // Get section order from localStorage or use default
   const [sectionOrder] = useState(() => {
@@ -264,9 +264,16 @@ const ResumePreview: React.FC = () => {
         </div>
       )}
 
-      <div className={`bg-white ${!isFullScreen ? 'shadow-lg rounded-lg p-8' : 'p-4 mx-auto max-w-4xl'} print:shadow-none print:p-0 print:max-w-none`}>
-        <div className="relative">
-          <SelectedTemplate resume={resumeToDisplay} color={color} font={font} sectionOrder={sectionOrder} />
+      <div className={`${!isFullScreen ? 'p-0' : 'p-4 mx-auto'} print:p-0 print:max-w-none`}>
+        <div className="relative flex justify-center">
+          <div
+            className={`bg-white shadow-lg ${!isFullScreen ? 'rounded-lg origin-top transform scale-95 lg:scale-90' : ''} print:shadow-none`}
+            style={{ width: '816px', minHeight: '1056px' }}
+          >
+            <div className={`p-8 ${font}`}>
+              <SelectedTemplate resume={resumeToDisplay} color={color} font={font} sectionOrder={sectionOrder} />
+            </div>
+          </div>
           {isFullScreen && (
             <button 
               onClick={toggleFullScreen}

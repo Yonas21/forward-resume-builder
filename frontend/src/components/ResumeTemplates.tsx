@@ -7,11 +7,11 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
   switch (sectionKey) {
     case 'personal':
       return (
-        <div className="text-center mb-6">
-          <h1 className={`text-2xl font-bold mb-1`} style={{ color }}>
+        <header className="text-center mb-6">
+          <h1 className={`text-3xl font-bold tracking-tight mb-1`} style={{ color }}>
             {resume.personal_info?.full_name || '[Your Name]'}
           </h1>
-          <div className="flex justify-center flex-wrap gap-x-4 text-gray-600">
+          <div className="flex justify-center flex-wrap gap-x-4 text-gray-600 text-sm">
             {resume.personal_info?.email && <span>{resume.personal_info.email}</span>}
             {resume.personal_info?.phone && <span>{resume.personal_info.phone}</span>}
             {resume.personal_info?.location && <span>{resume.personal_info.location}</span>}
@@ -19,69 +19,66 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
             {resume.personal_info?.github && <span>{resume.personal_info.github}</span>}
             {resume.personal_info?.website && <span>{resume.personal_info.website}</span>}
           </div>
-        </div>
+        </header>
       );
     case 'summary':
       return resume.professional_summary ? (
-        <div className="mb-4">
-          <h2 className={`text-lg font-semibold mb-1 border-b`} style={{ color }}>
+        <section className="mb-6">
+          <h2 className={`text-lg font-semibold pb-1 mb-2 border-b border-gray-200`} style={{ color }}>
             Professional Summary
           </h2>
-          <p>{resume.professional_summary}</p>
-        </div>
+          <p className="leading-relaxed text-gray-800">{resume.professional_summary}</p>
+        </section>
       ) : null;
     case 'experience':
       return resume?.experience?.length > 0 ? (
-        <div className="mb-4">
-          <h2 className={`text-lg font-semibold mb-2 border-b`} style={{ color }}>
+        <section className="mb-6">
+          <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Experience
           </h2>
           {resume.experience.map((exp: any, index: number) => (
-            <div key={index} className="mb-3">
-              <div className="flex justify-between">
-                <h3 className="font-medium">{exp?.position}</h3>
-                <span className="text-gray-600">
-                  {exp.start_date && new Date(exp.start_date).getFullYear()}{' '}
-                  {exp.end_date
-                    ? `- ${new Date(exp.end_date).getFullYear()}`
-                    : exp.is_current
-                    ? '- Present'
-                    : ''}
+            <div key={index} className="mb-4">
+              <div className="flex justify-between items-baseline">
+                <h3 className="font-semibold text-gray-900">{exp?.position}</h3>
+                <span className="text-gray-600 text-sm">
+                  {exp.start_date || ''}
+                  {(exp.is_current || exp.end_date) && ' - '}
+                  {exp.is_current ? 'Present' : (exp.end_date || '')}
                 </span>
               </div>
-              <p className="text-gray-700">{exp.company}</p>
-              <ul className="list-disc pl-5 mt-1">
+              <p className="text-gray-700 text-sm">{exp.company}</p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
                 {exp.description.map((desc: string, i: number) => (
-                  <li key={i}>{desc}</li>
+                  <li key={i} className="text-gray-800 leading-relaxed">{desc}</li>
                 ))}
               </ul>
             </div>
           ))}
-        </div>
+        </section>
       ) : null;
     case 'education':
       return resume.education.length > 0 ? (
-        <div className="mb-4">
-          <h2 className={`text-lg font-semibold mb-2 border-b`} style={{ color }}>
+        <section className="mb-6">
+          <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Education
           </h2>
           {resume.education.map((edu: any, index: number) => (
-            <div key={index} className="mb-2">
-              <div className="flex justify-between">
-                <h3 className="font-medium">{edu.institution}</h3>
-                <span className="text-gray-600">
-                  {edu.start_date && new Date(edu.start_date).getFullYear()}{' '}
-                  {edu.end_date && `- ${new Date(edu.end_date).getFullYear()}`}
+            <div key={index} className="mb-3">
+              <div className="flex justify-between items-baseline">
+                <h3 className="font-semibold text-gray-900">{edu.institution}</h3>
+                <span className="text-gray-600 text-sm">
+                  {edu.start_date || ''}
+                  {edu.end_date && ` - ${edu.end_date}`}
                 </span>
               </div>
-              <p>
+              <p className="text-gray-800 text-sm">
                 {edu.degree}
                 {edu.field_of_study && `, ${edu.field_of_study}`}
                 {edu.gpa && ` - GPA: ${edu.gpa}`}
               </p>
             </div>
           ))}
-        </div>
+        </section>
       ) : null;
     case 'skills':
       return resume?.skills?.length > 0 ? (
@@ -94,26 +91,26 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
       ) : null;
     case 'projects':
       return resume.projects.length > 0 ? (
-        <div className="mb-4">
-          <h2 className={`text-lg font-semibold mb-2 border-b`} style={{ color }}>
+        <section className="mb-6">
+          <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Projects
           </h2>
           {resume.projects.map((project: any, index: number) => (
-            <div key={index} className="mb-2">
-              <h3 className="font-medium">
+            <div key={index} className="mb-3">
+              <h3 className="font-semibold text-gray-900">
                 {project.name}
                 {project.url && (
                   <a
                     href={project.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 ml-2 text-sm"
+                    className="text-blue-600 ml-2 text-sm hover:underline"
                   >
                     [Link]
                   </a>
                 )}
               </h3>
-              <p className="text-sm">{project.description}</p>
+              <p className="text-sm text-gray-800 leading-relaxed">{project.description}</p>
               {project?.technologies?.length > 0 && (
                 <div className="text-sm text-gray-600 mt-1">
                   Technologies: {project.technologies.join(', ')}
@@ -121,25 +118,25 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
               )}
             </div>
           ))}
-        </div>
+        </section>
       ) : null;
     case 'certifications':
       return resume.certifications.length > 0 ? (
-        <div className="mb-4">
-          <h2 className={`text-lg font-semibold mb-2 border-b`} style={{ color }}>
+        <section className="mb-6">
+          <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Certifications
           </h2>
           {resume.certifications.map((cert: any, index: number) => (
             <div key={index} className="mb-2">
-              <span className="font-medium">{cert.name}</span>
-              <span className="text-gray-600 ml-2">
+              <span className="font-medium text-gray-900">{cert.name}</span>
+              <span className="text-gray-600 ml-2 text-sm">
                 {cert.issuing_organization}
                 {cert.issue_date &&
                   ` (${new Date(cert.issue_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })})`}
               </span>
             </div>
           ))}
-        </div>
+        </section>
       ) : null;
     default:
       return null;

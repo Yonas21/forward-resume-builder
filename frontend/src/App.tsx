@@ -18,35 +18,48 @@ function App() {
   return (
     
       <Router>
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-3 py-2 rounded">
+          Skip to main content
+        </a>
         <div className="min-h-screen bg-gray-50">
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/builder" element={
               <ProtectedRoute>
-                <ResumeBuilder />
+                <main id="main">
+                  <ResumeBuilder />
+                </main>
               </ProtectedRoute>
             } />
             <Route path="/preview" element={
               <ProtectedRoute>
-                <ResumePreview />
+                <main id="main">
+                  <ResumePreview />
+                </main>
               </ProtectedRoute>
             } />
-            <Route path="/templates" element={<TemplateSelection />} />
-            <Route path="/test-dnd" element={<DragDropTest />} />
+            <Route path="/templates" element={<main id="main"><TemplateSelection /></main>} />
+            <Route path="/test-dnd" element={<main id="main"><DragDropTest /></main>} />
             <Route path="/signup" element={
               <PublicRoute>
-                <Signup />
+                <main id="main">
+                  <Signup />
+                </main>
               </PublicRoute>
             } />
             <Route path="/login" element={
               <PublicRoute>
-                <Login />
+                <main id="main">
+                  <Login />
+                </main>
               </PublicRoute>
             } />
             <Route path="/reset-password" element={
               <PublicRoute>
-                <PasswordReset />
+                <main id="main">
+                  <PasswordReset />
+                </main>
               </PublicRoute>
             } />
             <Route path="*" element={<Navigate to="/" />} />

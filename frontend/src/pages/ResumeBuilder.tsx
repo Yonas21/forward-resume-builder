@@ -149,6 +149,8 @@ const ResumeBuilder: React.FC = () => {
   useEffect(() => {
     const storedTemplate = localStorage.getItem('selectedTemplate');
     const storedSectionOrder = localStorage.getItem('sectionOrder');
+    const storedFont = localStorage.getItem('resumeFont') || localStorage.getItem('selectedFont');
+    const storedColor = localStorage.getItem('resumeColor') || localStorage.getItem('selectedColor');
     
     if (storedTemplate) {
       setSelectedTemplate(storedTemplate);
@@ -157,6 +159,9 @@ const ResumeBuilder: React.FC = () => {
     if (storedSectionOrder) {
       setSectionOrder(JSON.parse(storedSectionOrder));
     }
+
+    if (storedFont) setFont(storedFont);
+    if (storedColor) setColor(storedColor);
   }, []);
 
   // Save section order to localStorage whenever it changes
@@ -1093,13 +1098,18 @@ const ResumeBuilder: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 max-h-[600px] overflow-y-auto">
-                <div className={`bg-white shadow-lg mx-auto transform scale-75 origin-top ${font}`} style={{ color }}>
-                  <div className="p-6">
-                    {renderTemplatePreview()}
-                  </div>
+          <div className="bg-gray-50 rounded-lg p-4 max-h-[600px] overflow-auto">
+            <div className="mx-auto">
+              <div
+                className="bg-white shadow-lg mx-auto origin-top transform scale-95 lg:scale-90"
+                style={{ width: '816px', minHeight: '1056px' }}
+              >
+                <div className={`p-8 ${font}`}>
+                  {renderTemplatePreview()}
                 </div>
               </div>
+            </div>
+          </div>
             </div>
           </div>
         </div>

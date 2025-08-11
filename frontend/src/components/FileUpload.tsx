@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
+import { useResumeStore } from '../store/resumeStore';
 
 
 interface FileUploadProps {
@@ -11,6 +12,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
   const navigate = useNavigate();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { setResume } = useResumeStore();
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -45,7 +47,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
     setIsLoading(true);
     try {
       const parsedResume = await apiService.parseResume(selectedFile);
-      localStorage.setItem('currentResume', JSON.stringify(parsedResume));
+      // Persist parsed resume into the central store
+      setResume(parsedResume);
       navigate('/builder');
     } catch (error) {
       console.error('Error parsing resume:', error);
@@ -63,7 +66,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
         try {
           if (event.target?.result) {
             const jsonData = JSON.parse(event.target.result as string);
-            localStorage.setItem('currentResume', JSON.stringify(jsonData));
+            // Load JSON resume directly into the central store
+            setResume(jsonData);
             navigate('/builder');
           }
         } catch (error) {
