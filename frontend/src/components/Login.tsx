@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { GoogleLogin } from '@react-oauth/google';
+import { authService } from '../services/authService';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -180,6 +182,39 @@ const Login: React.FC = () => {
             </button>
           </div>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="bg-white py-8 px-6 shadow-xl rounded-xl space-y-6 text-center">
+          <GoogleLogin
+            onSuccess={async credentialResponse => {
+              if (credentialResponse.credential) {
+                try {
+                  const authData = await authService.googleLogin({ token: credentialResponse.credential });
+                  login(authData.access_token, authData.user);
+                  console.log('Google login successful');
+                  navigate(from, { replace: true });
+                } catch (err) {
+                  console.error('Google login failed:', err);
+                  // Error is handled by authService and propagated to authStore
+                }
+              }
+            }}
+            onError={() => {
+              console.log('Google Login Failed');
+            }}
+            width="300px"
+            text="continue_with"
+            size="large"
+          />
+        </div>
 
         {/* Footer */}
         <div className="text-center">

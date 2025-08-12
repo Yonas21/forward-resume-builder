@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     # Gemini
     gemini_api_key: str
     gemini_model: str = "gemini-1.5-flash"
+
+    # Google OAuth2
+    google_client_id: str
+    google_client_secret: str
     
     # Server
     host: str = "0.0.0.0"

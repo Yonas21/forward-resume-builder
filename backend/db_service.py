@@ -11,7 +11,7 @@ class UserService:
     """Service class for user-related database operations"""
     
     @staticmethod
-    async def create_user(email: str, password: str, first_name: str = None, last_name: str = None) -> User:
+    async def create_user(email: str, password: Optional[str], first_name: str = None, last_name: str = None) -> User:
         """Create a new user"""
         try:
             # Check if user already exists
@@ -19,14 +19,16 @@ class UserService:
             if existing_user:
                 raise ValueError("User with this email already exists")
             
-            # Hash password
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            hashed_password = None
+            if password:
+                # Hash password
+                hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             
             user = User(
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
-                hashed_password=hashed_password.decode('utf-8'),
+                hashed_password=hashed_password,
                 is_active=True
             )
             

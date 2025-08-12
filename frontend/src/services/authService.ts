@@ -125,6 +125,18 @@ class AuthService {
       throw this.handleError(error);
     }
   }
+
+  async googleLogin(tokenData: { token: string }): Promise<AuthResponse> {
+    try {
+      const response: AxiosResponse<AuthResponse> = await axios.post(
+        `${API_BASE_URL}/auth/google/login`,
+        tokenData
+      );
+      return response.data;
+    } catch (error: any) {
+      throw this.handleError(error);
+    }
+  }
 }
 
 // Create and export a singleton instance

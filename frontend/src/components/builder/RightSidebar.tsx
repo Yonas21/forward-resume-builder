@@ -38,7 +38,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           <div className="mx-auto">
             <div
               className="bg-white shadow-lg mx-auto origin-top transform"
-              style={{ width: '816px', minHeight: '1056px', scale: `${zoom}%` as any }}
+              style={{ width: '816px', minHeight: '1056px', scale: `${zoom}%` }}
             >
               <div className={`${font}`} style={{ padding: pagePadding }}>
                 {renderTemplatePreview()}

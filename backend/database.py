@@ -59,7 +59,7 @@ class User(Document):
     email: EmailStr = Field(unique=True, index=True)
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    hashed_password: str
+    hashed_password: Optional[str] = None
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

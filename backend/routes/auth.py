@@ -1,12 +1,16 @@
 """
 Authentication routes for the Resume Builder API.
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 import logging
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import httpx
 
 from core.config import settings
 from schemas.requests import UserSignupRequest, UserLoginRequest, PasswordResetRequest, PasswordResetConfirm
@@ -236,4 +240,76 @@ async def confirm_password_reset(reset_confirm: PasswordResetConfirm):
         raise
     except Exception as e:
         logger.error(f"Error during password reset confirmation: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.post("/refresh-token", response_model=AuthResponse)
+async def refresh_token(current_user: User = Depends(get_current_user)):
+    """Refresh access token."""
+    logger.info(f"Token refresh request for user: {current_user.email}")
+    
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(
+        data={"sub": current_user.email}, 
+        expires_delta=access_token_expires
+    )
+    
+    user_response = UserResponse(
+        id=str(current_user.id),
+        email=current_user.email,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        created_at=current_user.created_at,
+        is_active=current_user.is_active
+    )
+    
+    return AuthResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=user_response
+    )
+
+@router.post("/google/login")
+async def google_login(token_data: dict):
+    try:
+        id_info = id_token.verify_oauth2_token(
+            token_data["token"], google_requests.Request(), settings.google_client_id
+        )
+
+        email = id_info.get("email")
+        first_name = id_info.get("given_name")
+        last_name = id_info.get("family_name")
+
+        if not email:
+            raise HTTPException(status_code=400, detail="Email not found in token")
+
+        user = await UserService.get_user_by_email(email)
+        if not user:
+            user = await UserService.create_user(
+                email=email,
+                password=None,  # No password for OAuth users
+                first_name=first_name,
+                last_name=last_name,
+            )
+
+        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+        access_token = create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
+        )
+
+        user_response = UserResponse(
+            id=str(user.id),
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            created_at=user.created_at,
+            is_active=user.is_active,
+        )
+
+        return AuthResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=user_response,
+        )
+    except Exception as e:
+        logger.error(f"Error during google login: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
