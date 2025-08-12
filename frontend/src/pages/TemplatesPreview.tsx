@@ -1,102 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { templates } from '../components/TemplateConfig';
-import type { Resume } from '../types';
+import { samplePreviewResume } from '../data/sample';
 
 const TemplatesPreview: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(templates[3].id);
   
   // Sample resume data for preview - Data Analyst template
-  const sampleResume: Resume = {
-    personal_info: {
-      full_name: 'Your Name',
-      email: 'yourname@example.com',
-      phone: '(555) 123-4567',
-      location: 'San Francisco, CA',
-      linkedin: 'linkedin.com/in/yourname',
-      github: 'github.com/yourname',
-      website: 'yourportfolio.dev'
-    },
-    professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
-    skills: [
-      { name: 'SQL', category: 'language', level: 'expert' },
-      { name: 'Python', category: 'language', level: 'expert' },
-      { name: 'R', category: 'language', level: 'advanced' },
-      { name: 'Tableau', category: 'tools', level: 'expert' },
-      { name: 'Power BI', category: 'tools', level: 'advanced' },
-      { name: 'Excel', category: 'tools', level: 'expert' },
-      { name: 'Statistical Analysis', category: 'technical', level: 'expert' },
-      { name: 'Data Visualization', category: 'technical', level: 'expert' },
-      { name: 'Machine Learning', category: 'technical', level: 'advanced' },
-      { name: 'A/B Testing', category: 'technical', level: 'advanced' },
-      { name: 'Data Cleaning', category: 'technical', level: 'expert' },
-      { name: 'ETL Processes', category: 'technical', level: 'intermediate' },
-    ],
-    experience: [
-      {
-        company: 'Data Insights Corp',
-        position: 'Senior Data Analyst',
-        start_date: 'Jun 2021',
-        end_date: 'Present',
-        is_current: true,
-        description: ['Analyzed customer behavior data to identify patterns, resulting in 15% increase in user retention', 'Built interactive dashboards using Tableau to visualize KPIs for executive leadership', 'Implemented A/B testing framework that improved conversion rates by 22%', 'Collaborated with cross-functional teams to develop data-driven solutions']
-      },
-      {
-        company: 'Tech Analytics LLC',
-        position: 'Data Analyst',
-        start_date: 'Mar 2019',
-        end_date: 'May 2021',
-        is_current: false,
-        description: ['Performed data cleaning and preprocessing on large datasets using Python and SQL', 'Created automated reporting systems that saved 10 hours of manual work weekly', 'Conducted statistical analysis to identify market trends and opportunities', 'Presented findings to stakeholders in clear, actionable reports']
-      }
-    ],
-    education: [
-      {
-        institution: 'University of Data Science',
-        degree: 'Master of Science',
-        field_of_study: 'Data Analytics',
-        start_date: '2017',
-        end_date: '2019',
-        gpa: '3.9'
-      },
-      {
-        institution: 'State University',
-        degree: 'Bachelor of Science',
-        field_of_study: 'Statistics',
-        start_date: '2013',
-        end_date: '2017',
-        gpa: '3.7'
-      }
-    ],
-    projects: [
-      {
-        name: 'Customer Segmentation Analysis',
-        description: 'Applied clustering algorithms to segment customers based on purchasing behavior, enabling targeted marketing campaigns that increased revenue by 18%.',
-        technologies: ['Python', 'scikit-learn', 'Pandas', 'Matplotlib', 'K-means Clustering']
-      },
-      {
-        name: 'Sales Prediction Model',
-        description: 'Developed a machine learning model to forecast quarterly sales with 92% accuracy, helping the company optimize inventory management and resource allocation.',
-        technologies: ['R', 'Random Forest', 'Time Series Analysis', 'Data Visualization', 'Feature Engineering']
-      }
-    ],
-    certifications: [
-      {
-        name: 'Microsoft Certified: Data Analyst Associate',
-        issuing_organization: 'Microsoft',
-        issue_date: '2022-03-15',
-        expiration_date: '2025-03-15',
-        credential_id: 'DA-123456'
-      },
-      {
-        name: 'Google Data Analytics Professional Certificate',
-        issuing_organization: 'Google',
-        issue_date: '2021-06-10',
-        expiration_date: '',
-        credential_id: 'GDA-789012'
-      }
-    ]
-  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -123,7 +33,7 @@ const TemplatesPreview: React.FC = () => {
               {/* Render the template with sample data */}
               <div className="transform scale-75 origin-top">
                 {React.createElement(template.component, {
-                  resume: sampleResume,
+                  resume: samplePreviewResume,
                   color: '#4f46e5',
                   font: 'font-sans'
                 })}

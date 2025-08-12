@@ -6,6 +6,8 @@ import { useToast } from '../components/ToastProvider';
 import { useResumeStore } from '../store/resumeStore';
 import { useResumeManagerStore } from '../store/resumeManagerStore';
 import type { JobDescription, Resume } from '../types';
+import { sampleTemplateResume } from '../data/sample';
+import { professions } from '../utils/settings';
 
 const TemplateSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -33,15 +35,6 @@ const TemplateSelection: React.FC = () => {
   const [profession, setProfession] = useState('');
   const [tailorExisting, setTailorExisting] = useState(false);
   
-  const professions = [
-    'Software Developer',
-    'Data Analyst', 
-    'Data Engineer',
-    'Business & Legal',
-    'Creative & Tech',
-    'Marketing',
-    'Other'
-  ];
 
   useEffect(() => {
     // Check if coming from home page with specific flow
@@ -71,45 +64,8 @@ const TemplateSelection: React.FC = () => {
 
   // Template thumbnail generator
   const generateThumbnail = (template: any) => {
-    const sampleResume: Resume = {
-      personal_info: {
-        full_name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1 (555) 123-4567',
-        location: 'New York, NY',
-        linkedin: 'linkedin.com/in/johndoe',
-        github: 'github.com/johndoe',
-        website: 'johndoe.com'
-      },
-      professional_summary: 'Experienced professional with expertise in modern technologies and proven track record of success.',
-      skills: [
-        { name: 'JavaScript', category: 'language', level: 'advanced' },
-        { name: 'React', category: 'framework', level: 'advanced' },
-        { name: 'Node.js', category: 'framework', level: 'intermediate' },
-        { name: 'Python', category: 'language', level: 'intermediate' },
-      ],
-      experience: [{
-        company: 'Tech Corp',
-        position: 'Senior Developer',
-        start_date: '2020-01-01',
-        end_date: '2023-12-31',
-        description: ['Led development of key features', 'Mentored junior developers'],
-        is_current: false
-      }],
-      education: [{
-        institution: 'University of Technology',
-        degree: 'Bachelor of Science',
-        field_of_study: 'Computer Science',
-        start_date: '2016-09-01',
-        end_date: '2020-05-31',
-        gpa: '3.8'
-      }],
-      projects: [],
-      certifications: []
-    };
-
     return React.createElement(template.component, {
-      resume: sampleResume,
+      resume: sampleTemplateResume,
       color: '#2563eb',
       font: 'font-sans'
     });

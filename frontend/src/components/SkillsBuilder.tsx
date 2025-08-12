@@ -1,60 +1,9 @@
 import React, { useState } from 'react';
 import { useResumeStore } from '../store/resumeStore';
 import type { Skill } from '../types';
+import { skillCategories, skillLevels } from '../utils/settings';
+import { suggestedSkills } from '../data/sample';
 
-const skillCategories = [
-  { id: 'technical', name: 'Technical Skills', icon: '💻' },
-  { id: 'soft', name: 'Soft Skills', icon: '🤝' },
-  { id: 'languages', name: 'Languages', icon: '🌍' },
-  { id: 'tools', name: 'Tools & Platforms', icon: '🛠️' },
-  { id: 'frameworks', name: 'Frameworks & Libraries', icon: '📚' },
-  { id: 'databases', name: 'Databases', icon: '🗄️' },
-  { id: 'cloud', name: 'Cloud & DevOps', icon: '☁️' },
-  { id: 'design', name: 'Design & Creative', icon: '🎨' }
-];
-
-const suggestedSkills = {
-  technical: [
-    'JavaScript', 'Python', 'Java', 'C++', 'C#', 'TypeScript', 'Go', 'Rust', 'PHP', 'Ruby',
-    'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Assembly', 'Shell Scripting', 'SQL'
-  ],
-  soft: [
-    'Leadership', 'Communication', 'Problem Solving', 'Teamwork', 'Time Management',
-    'Critical Thinking', 'Adaptability', 'Creativity', 'Emotional Intelligence', 'Negotiation',
-    'Public Speaking', 'Project Management', 'Mentoring', 'Conflict Resolution'
-  ],
-  languages: [
-    'English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 'Arabic',
-    'Portuguese', 'Italian', 'Russian', 'Hindi', 'Dutch', 'Swedish', 'Norwegian'
-  ],
-  tools: [
-    'Git', 'Docker', 'Kubernetes', 'Jenkins', 'Jira', 'Confluence', 'Slack', 'Trello',
-    'Figma', 'Adobe Creative Suite', 'VS Code', 'IntelliJ IDEA', 'Postman', 'Tableau'
-  ],
-  frameworks: [
-    'React', 'Angular', 'Vue.js', 'Node.js', 'Express.js', 'Django', 'Flask', 'Spring',
-    'Laravel', 'Ruby on Rails', '.NET', 'Bootstrap', 'Tailwind CSS', 'jQuery'
-  ],
-  databases: [
-    'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Oracle', 'SQL Server', 'SQLite',
-    'Cassandra', 'DynamoDB', 'Firebase', 'Elasticsearch', 'Neo4j'
-  ],
-  cloud: [
-    'AWS', 'Azure', 'Google Cloud', 'Heroku', 'DigitalOcean', 'Vercel', 'Netlify',
-    'Terraform', 'Ansible', 'Chef', 'Puppet', 'Prometheus', 'Grafana'
-  ],
-  design: [
-    'UI/UX Design', 'Graphic Design', 'Web Design', 'Mobile Design', 'Brand Design',
-    'Illustration', 'Typography', 'Color Theory', 'Prototyping', 'User Research'
-  ]
-};
-
-const skillLevels = [
-  { value: 'beginner', label: 'Beginner', color: 'bg-green-100 text-green-800' },
-  { value: 'intermediate', label: 'Intermediate', color: 'bg-blue-100 text-blue-800' },
-  { value: 'advanced', label: 'Advanced', color: 'bg-purple-100 text-purple-800' },
-  { value: 'expert', label: 'Expert', color: 'bg-red-100 text-red-800' }
-];
 
 const SkillsBuilder: React.FC = () => {
   const skills = useResumeStore(state => state.resume.skills);

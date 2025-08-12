@@ -24,6 +24,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { colorPresets, fontOptions, sections } from '../utils/settings';
 
 // Sortable Section Component
 interface SortableSectionProps {
@@ -129,30 +130,6 @@ const ResumeBuilder: React.FC = () => {
     })
   );
 
-  const sections = {
-    personal: { name: 'Personal Info', icon: '👤' },
-    summary: { name: 'Professional Summary', icon: '📝' },
-    experience: { name: 'Work Experience', icon: '💼' },
-    education: { name: 'Education', icon: '🎓' },
-    skills: { name: 'Skills', icon: '🛠️' },
-    projects: { name: 'Projects', icon: '🚀' },
-    certifications: { name: 'Certifications', icon: '🏆' }
-  };
-
-  const fontOptions = [
-    { value: 'font-sans', name: 'Sans Serif (Modern)', example: 'Aa' },
-    { value: 'font-serif', name: 'Serif (Traditional)', example: 'Aa' },
-    { value: 'font-mono', name: 'Monospace (Technical)', example: 'Aa' }
-  ];
-
-  const colorPresets = [
-    { name: 'Professional Blue', value: '#2563eb' },
-    { name: 'Business Gray', value: '#374151' },
-    { name: 'Creative Purple', value: '#7c3aed' },
-    { name: 'Modern Green', value: '#059669' },
-    { name: 'Bold Red', value: '#dc2626' },
-    { name: 'Elegant Navy', value: '#1e3a8a' }
-  ];
 
   useEffect(() => {
     const storedTemplate = localStorage.getItem('selectedTemplate');
