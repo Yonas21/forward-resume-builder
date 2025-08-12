@@ -48,6 +48,11 @@ export interface Skill {
 }
 
 export interface Resume {
+  id?: string; // MongoDB _id
+  user_id?: string; // Reference to User._id
+  title?: string;
+  is_default?: boolean;
+
   personal_info: PersonalInfo;
   professional_summary: string;
   skills: Skill[];
@@ -55,6 +60,13 @@ export interface Resume {
   education: Education[];
   projects: Project[];
   certifications: Certification[];
+
+  template_id?: string;
+  font_family?: string;
+  accent_color?: string;
+
+  created_at?: string; // datetime string
+  updated_at?: string; // datetime string
 }
 
 export interface JobDescription {

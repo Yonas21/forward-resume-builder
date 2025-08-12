@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Resume, PersonalInfo, Experience, Education, Project, Certification, Skill } from '../types';
+import { resumeService } from '../services/resumeService';
+import { sampleResume } from '../data/sample';
 
 // Define the state shape and actions
 interface ResumeState {
@@ -21,6 +22,7 @@ interface ResumeState {
   updateCertification: (index: number, updates: Partial<Certification>) => void;
   deleteCertification: (index: number) => void;
   updateSkills: (skills: Skill[]) => void;
+  fetchUserResume: (userId: string) => Promise<void>;
 }
 
 const initialResume: Resume = {
@@ -34,9 +36,8 @@ const initialResume: Resume = {
 };
 
 export const useResumeStore = create<ResumeState>()(
-  persist(
-    (set) => ({
-      resume: initialResume,
+  (set) => ({
+    resume: initialResume,
       
       setResume: (resume) => set({ resume }),
 
@@ -91,24 +92,23 @@ export const useResumeStore = create<ResumeState>()(
       updateSkills: (skills) => set(state => ({
         resume: { ...state.resume, skills }
       })),
-    }),
-    {
-      name: 'currentResume',
-      storage: createJSONStorage(() => localStorage),
-      version: 1,
-      migrate: (persistedState, version) => {
-        const state = persistedState as ResumeState;
-        if (version < 1) {
-          if (state.resume.skills && Array.isArray(state.resume.skills) && state.resume.skills.length > 0 && typeof state.resume.skills[0] === 'string') {
-            state.resume.skills = (state.resume.skills as unknown as string[]).map((skill: string) => ({
-              name: skill,
-              category: 'technical',
-              level: 'intermediate'
-            }));
+
+      fetchUserResume: async (userId: string) => {
+        try {
+          const userResumes = await resumeService.getUserResumes(userId);
+          if (userResumes.resumes.length > 0) {
+            // Assuming we want to load the first resume if multiple exist
+            const firstResume = userResumes.resumes[0];
+            set({ resume: firstResume });
+          } else {
+            // No resumes found, initialize with sample data
+            set({ resume: sampleResume });
           }
+        } catch (error) {
+          console.error("Failed to fetch user resumes:", error);
+          // Fallback to sample data on error as well
+          set({ resume: sampleResume });
         }
-        return state;
       },
-    }
-  )
+    })
 );

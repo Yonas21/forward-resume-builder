@@ -57,7 +57,7 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
         </section>
       ) : null;
     case 'education':
-      return resume.education.length > 0 ? (
+      return resume?.education?.length > 0 ? (
         <section className="mb-6">
           <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Education
@@ -90,12 +90,12 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
         />
       ) : null;
     case 'projects':
-      return resume.projects.length > 0 ? (
+      return resume?.projects?.length > 0 ? (
         <section className="mb-6">
           <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Projects
           </h2>
-          {resume.projects.map((project: any, index: number) => (
+          {resume?.projects?.map((project: any, index: number) => (
             <div key={index} className="mb-3">
               <h3 className="font-semibold text-gray-900">
                 {project.name}
@@ -121,12 +121,12 @@ const renderSection = (sectionKey: string, resume: any, color: string) => {
         </section>
       ) : null;
     case 'certifications':
-      return resume.certifications.length > 0 ? (
+      return resume?.certifications?.length > 0 ? (
         <section className="mb-6">
           <h2 className={`text-lg font-semibold pb-1 mb-3 border-b border-gray-200`} style={{ color }}>
             Certifications
           </h2>
-          {resume.certifications.map((cert: any, index: number) => (
+          {resume?.certifications?.map((cert: any, index: number) => (
             <div key={index} className="mb-2">
               <span className="font-medium text-gray-900">{cert.name}</span>
               <span className="text-gray-600 ml-2 text-sm">

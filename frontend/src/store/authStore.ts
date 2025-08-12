@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { authService } from '../services/authService';
 import type { UserResponse, LoginRequest, SignupRequest } from '../services/authService';
+import { useResumeStore } from './resumeStore';
 
 interface AuthState {
   user: UserResponse | null;
@@ -14,6 +15,7 @@ interface AuthState {
   signup: (userData: SignupRequest) => Promise<void>;
   initializeAuth: () => Promise<void>;
   clearError: () => void;
+  setAuthData: (token: string, user: UserResponse) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -32,6 +34,8 @@ export const useAuthStore = create<AuthState>()(
             set({ isAuthenticated: true, isLoading: true });
             const currentUser = await authService.getCurrentUser();
             set({ user: currentUser, isLoading: false });
+            // Fetch user's resume after successful authentication
+            useResumeStore.getState().fetchUserResume(currentUser.id);
           } catch (error) {
             console.error('Auth initialization error:', error);
             set({ user: null, token: null, isAuthenticated: false, isLoading: false });
@@ -86,6 +90,18 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => {
         set({ error: null });
+      },
+
+      setAuthData: (token, user) => {
+        set({
+          user: user,
+          token: token,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null, // Clear any previous errors on successful auth
+        });
+        // Fetch user's resume after successful authentication
+        useResumeStore.getState().fetchUserResume(user.id);
       },
     }),
     {

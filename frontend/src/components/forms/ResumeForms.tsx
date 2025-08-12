@@ -68,7 +68,7 @@ export const PersonalInfoForm: React.FC = () => {
         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
         <input
           type="text"
-          value={resume.personal_info.full_name}
+          value={resume?.personal_info?.full_name}
           onChange={(e) => updatePersonalInfo('full_name', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="John Doe"
@@ -79,7 +79,7 @@ export const PersonalInfoForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
           <input
             type="email"
-            value={resume.personal_info.email}
+            value={resume?.personal_info?.email}
             onChange={(e) => updatePersonalInfo('email', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="john@example.com"
@@ -89,7 +89,7 @@ export const PersonalInfoForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
           <input
             type="tel"
-            value={resume.personal_info.phone}
+            value={resume?.personal_info?.phone}
             onChange={(e) => updatePersonalInfo('phone', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="+1 (555) 123-4567"
@@ -100,7 +100,7 @@ export const PersonalInfoForm: React.FC = () => {
         <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
         <input
           type="text"
-          value={resume.personal_info.location}
+          value={resume?.personal_info?.location}
           onChange={(e) => updatePersonalInfo('location', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="New York, NY"
@@ -111,7 +111,7 @@ export const PersonalInfoForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
           <input
             type="url"
-            value={resume.personal_info.linkedin}
+            value={resume?.personal_info?.linkedin}
             onChange={(e) => updatePersonalInfo('linkedin', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="linkedin.com/in/johndoe"
@@ -121,7 +121,7 @@ export const PersonalInfoForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
           <input
             type="url"
-            value={resume.personal_info.github}
+            value={resume?.personal_info?.github}
             onChange={(e) => updatePersonalInfo('github', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="github.com/johndoe"
@@ -132,7 +132,7 @@ export const PersonalInfoForm: React.FC = () => {
         <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
         <input
           type="url"
-          value={resume.personal_info.website}
+          value={resume?.personal_info?.website}
           onChange={(e) => updatePersonalInfo('website', e.target.value)}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="johndoe.com"

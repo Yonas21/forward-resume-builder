@@ -9,7 +9,7 @@ const Login: React.FC = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
   
-  const { login, isLoading, error, clearError } = useAuthStore();
+                    const { login, isLoading, error, clearError, setAuthData } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -198,7 +198,7 @@ const Login: React.FC = () => {
               if (credentialResponse.credential) {
                 try {
                   const authData = await authService.googleLogin({ token: credentialResponse.credential });
-                  login(authData.access_token, authData.user);
+                  setAuthData(authData.access_token, authData.user);
                   console.log('Google login successful');
                   navigate(from, { replace: true });
                 } catch (err) {
