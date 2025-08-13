@@ -9,7 +9,11 @@ import { useResumeStore } from '../store/resumeStore';
 import { sampleResume } from '../data/sample';
 
 const ResumePreview: React.FC = () => {
-  const storeResume = useResumeStore((s) => s.resume);
+  const { resume: storeResume, fetchMyResume } = useResumeStore();
+
+  useEffect(() => {
+    fetchMyResume();
+  }, [fetchMyResume]);
   const [selectedTemplate, setSelectedTemplate] = useState('data-analyst');
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#333');

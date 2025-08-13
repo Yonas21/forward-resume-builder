@@ -21,7 +21,12 @@ import { useAiSummary } from '../hooks/useAiSummary';
 const ResumeBuilder: React.FC = () => {
   const {
     resume,
+    fetchMyResume,
   } = useResumeStore();
+
+  useEffect(() => {
+    fetchMyResume();
+  }, [fetchMyResume]);
 
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#2563eb');

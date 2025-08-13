@@ -133,7 +133,7 @@ const TemplateSelection: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const parsedResume = await apiService.parseResume(selectedFile);
+      const parsedResume = await apiService.parseAndSaveResume(selectedFile);
       setResume(parsedResume);
       const created = createResume(`${parsedResume.personal_info?.full_name || 'Imported'} Resume`, parsedResume);
       setActiveResume(created.id);
