@@ -80,6 +80,14 @@ class UserService:
             logger.error(f"Error updating password for user {user_id}: {e}")
             return False
 
+def clean_resume_data(data: Any) -> Any:
+    """Recursively remove None values from nested dicts and lists."""
+    if isinstance(data, dict):
+        return {k: clean_resume_data(v) for k, v in data.items() if v is not None}
+    if isinstance(data, list):
+        return [clean_resume_data(item) for item in data]
+    return data
+
 class ResumeService:
     """Service class for resume-related database operations"""
     
@@ -94,8 +102,11 @@ class ResumeService:
             if resume_data is None:
                 resume_data = {}
             
+            # Clean the resume_data to remove None values
+            cleaned_data = clean_resume_data(resume_data)
+
             # Convert personal_info dict to PersonalInfo object if needed
-            personal_info_data = resume_data.get('personal_info', {})
+            personal_info_data = cleaned_data.get('personal_info', {})
             if isinstance(personal_info_data, dict):
                 personal_info = PersonalInfo(**personal_info_data)
             else:
@@ -105,15 +116,15 @@ class ResumeService:
                 user_id=user_id,
                 title=title,
                 personal_info=personal_info,
-                professional_summary=resume_data.get('professional_summary', ''),
-                skills=resume_data.get('skills', []),
-                experience=resume_data.get('experience', []),
-                education=resume_data.get('education', []),
-                projects=resume_data.get('projects', []),
-                certifications=resume_data.get('certifications', []),
-                template_id=resume_data.get('template_id', 'basic'),
-                font_family=resume_data.get('font_family', 'font-sans'),
-                accent_color=resume_data.get('accent_color', '#2563eb')
+                professional_summary=cleaned_data.get('professional_summary', ''),
+                skills=cleaned_data.get('skills', []),
+                experience=cleaned_data.get('experience', []),
+                education=cleaned_data.get('education', []),
+                projects=cleaned_data.get('projects', []),
+                certifications=cleaned_data.get('certifications', []),
+                template_id=cleaned_data.get('template_id', 'basic'),
+                font_family=cleaned_data.get('font_family', 'font-sans'),
+                accent_color=cleaned_data.get('accent_color', '#2563eb')
             )
             
             await resume.save()
