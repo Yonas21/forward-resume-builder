@@ -58,7 +58,14 @@ class GeminiService:
                 "website": ""
             }},
             "professional_summary": "",
-            "skills": [],
+            "skills": [
+                {{
+                    "name": "",
+                    "category_id": "",
+                    "category": "",
+                    "level": ""
+                }}
+            ],
             "experience": [
                 {{
                     "company": "",
