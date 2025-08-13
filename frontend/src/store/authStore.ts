@@ -55,8 +55,11 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error: any) {
-          set({ error: error.message, isLoading: false });
+          get().initializeAuth();
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            set({ error: error.message, isLoading: false });
+          }
           throw error;
         }
       },
@@ -82,8 +85,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error: any ) {
-          set({ error: error.message, isLoading: false });
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            set({ error: error.message, isLoading: false });
+          }
           throw error;
         }
       },

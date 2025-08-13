@@ -21,6 +21,9 @@ interface ResumeState {
   addCertification: () => void;
   updateCertification: (index: number, updates: Partial<Certification>) => void;
   deleteCertification: (index: number) => void;
+  addSkill: (skill: Skill) => void;
+  updateSkill: (index: number, updates: Partial<Skill>) => void;
+  deleteSkill: (index: number) => void;
   updateSkills: (skills: Skill[]) => void;
   fetchUserResume: (userId: string) => Promise<void>;
 }
@@ -89,11 +92,32 @@ export const useResumeStore = create<ResumeState>()(
         resume: { ...state.resume, certifications: state.resume.certifications.filter((_, i) => i !== index) }
       })),
 
+      addSkill: (skill) => set(state => ({
+        resume: { ...state.resume, skills: [...state.resume.skills, skill] }
+      })),
+      updateSkill: (index, updates) => set(state => ({
+        resume: { ...state.resume, skills: state.resume.skills.map((skill, i) => i === index ? { ...skill, ...updates } : skill) }
+      })),
+      deleteSkill: (index) => set(state => ({
+        resume: { ...state.resume, skills: state.resume.skills.filter((_, i) => i !== index) }
+      })),
+
       updateSkills: (skills) => set(state => ({
         resume: { ...state.resume, skills }
       })),
 
-      fetchUserResume: async (userId: string) => {
+      fetchMyResume: async () => {
+    try {
+      const myResume = await resumeService.getMyResume();
+      set({ resume: myResume });
+    } catch (error) {
+      console.error("Failed to fetch user resume:", error);
+      // Fallback to sample data on error
+      set({ resume: sampleResume });
+    }
+  },
+
+  fetchUserResume: async (userId: string) => {
         try {
           const userResumes = await resumeService.getUserResumes(userId);
           if (userResumes.resumes.length > 0) {
