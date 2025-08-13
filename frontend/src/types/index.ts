@@ -43,6 +43,7 @@ export interface Certification {
 
 export interface Skill {
   name: string;
+  category_id: string;
   category: string;
   level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }
