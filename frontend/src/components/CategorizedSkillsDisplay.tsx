@@ -56,7 +56,7 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
         <div className="flex flex-wrap gap-1">
           {skills.slice(0, maxSkillsPerCategory).map((skill, index) => (
             <span key={index} className="bg-gray-100 px-2 py-1 rounded text-sm">
-              {skill.name}
+              {skill.toString()}
               {showLevels && skill.level !== 'intermediate' && (
                 <span className="text-xs text-gray-500 ml-1">({skill.level})</span>
               )}
@@ -110,7 +110,7 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
                   className="inline-flex items-center px-2 py-1 rounded text-xs"
                   style={{ backgroundColor: `${color}15`, color: color }}
                 >
-                  {skill.name}
+                  {skill.toString()}
                   {showLevels && skill.level !== 'intermediate' && (
                     <span className={`ml-1 px-1 py-0.5 rounded text-xs ${getLevelColor(skill.level)}`}>
                       {getLevelLabel(skill.level)}

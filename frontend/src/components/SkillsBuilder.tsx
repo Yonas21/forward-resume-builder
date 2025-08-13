@@ -12,7 +12,7 @@ const SkillsBuilder: React.FC = () => {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Skills</h3>
         <button
-          onClick={addSkill}
+          onClick={() => addSkill({ name: '', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' })}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,7 +28,7 @@ const SkillsBuilder: React.FC = () => {
           <h4 className="text-lg font-medium text-gray-900 mb-2">No skills added yet</h4>
           <p className="text-gray-600 mb-4">Add your skills to highlight your expertise</p>
           <button
-            onClick={addSkill}
+            onClick={() => addSkill({ name: '', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' })}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,13 +50,13 @@ const SkillsBuilder: React.FC = () => {
               />
               <select
                 value={skill.level}
-                onChange={(e) => updateSkill(index, { level: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert' })}
+                onChange={(e) => updateSkill(index, { level: e.target.value as 'beginner' | 'intermediate' | 'advanced' | 'expert' })}
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
-                <option value="Expert">Expert</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="expert">Expert</option>
               </select>
               <button
                 onClick={() => deleteSkill(index)}

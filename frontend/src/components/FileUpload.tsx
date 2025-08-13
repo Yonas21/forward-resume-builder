@@ -48,7 +48,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
 
     setIsLoading(true);
     try {
-      const parsedResume = await apiService.parseResume(selectedFile);
+      const parsedResume = await apiService.parseAndSaveResume(selectedFile);
       // Persist parsed resume into the central store
       setResume(parsedResume);
       navigate('/builder');
