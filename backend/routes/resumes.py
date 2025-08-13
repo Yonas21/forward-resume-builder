@@ -72,6 +72,40 @@ async def get_user_resumes(
         logger.error(f"Error fetching resumes for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching resumes")
 
+@router.get("/my-resume", response_model=ResumeResponse)
+async def get_my_resume(
+    current_user: User = Depends(get_current_user)
+):
+    """Get the authenticated user's most recently updated resume."""
+    try:
+        resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
+        if not resumes:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        resume = resumes[0]
+        return ResumeResponse(
+            id=str(resume.id),
+            title=resume.title,
+            is_default=resume.is_default,
+            personal_info=resume.personal_info.dict(),
+            professional_summary=resume.professional_summary,
+            skills=resume.skills,
+            experience=[exp.dict() for exp in resume.experience],
+            education=[edu.dict() for edu in resume.education],
+            projects=[proj.dict() for proj in resume.projects],
+            certifications=[cert.dict() for cert in resume.certifications],
+            template_id=resume.template_id,
+            font_family=resume.font_family,
+            accent_color=resume.accent_color,
+            created_at=resume.created_at,
+            updated_at=resume.updated_at
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching resume for user {current_user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching resume")
+
 @router.get("/{resume_id}", response_model=ResumeResponse)
 async def get_resume(
     resume_id: str,
@@ -213,9 +247,16 @@ async def restore_resume_version(
 # AI-powered routes
 ai_router = APIRouter(prefix="/ai", tags=["ai"])
 
-@ai_router.post("/parse-resume")
-async def parse_resume(file: UploadFile = File(...)):
-    """Parse uploaded resume file using AI."""
+@ai_router.post("/parse-and-save-resume", response_model=ResumeResponse)
+async def parse_and_save_resume(
+    file: UploadFile = File(...), 
+    current_user: User = Depends(get_current_user)
+):
+    """Parse, and save the uploaded resume file using AI."""
+    # Ensure current_user is not None (authentication check)
+    if not current_user or not getattr(current_user, "id", None):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         file_content = await file.read()
         resume_text = file_parser.parse_file(file.filename, file_content)
@@ -229,12 +270,35 @@ async def parse_resume(file: UploadFile = File(...)):
             pre_processed_hints=pre_processed_data
         )
         
-        return structured_resume
+        resume = await ResumeService.create_resume(
+            user_id=str(current_user.id),
+            title=f"Resume from {file.filename}",
+            resume_data=structured_resume
+        )
+        
+        return ResumeResponse(
+            id=str(resume.id),
+            title=resume.title,
+            is_default=resume.is_default,
+            personal_info=resume.personal_info.dict(),
+            professional_summary=resume.professional_summary,
+            skills=resume.skills,
+            experience=[exp.dict() for exp in resume.experience],
+            education=[edu.dict() for edu in resume.education],
+            projects=[proj.dict() for proj in resume.projects],
+            certifications=[cert.dict() for cert in resume.certifications],
+            template_id=resume.template_id,
+            font_family=resume.font_family,
+            accent_color=resume.accent_color,
+            created_at=resume.created_at,
+            updated_at=resume.updated_at
+        )
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error parsing resume file {file.filename}: {e}")
         raise HTTPException(status_code=500, detail="Error parsing resume")
+
 
 @ai_router.post("/optimize-resume")
 async def optimize_resume(request: OptimizeResumeRequest):
