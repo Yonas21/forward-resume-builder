@@ -1,32 +1,5 @@
-import axios, { type AxiosResponse } from 'axios';
-import { useAuthStore } from '../store/authStore'; // Import the zustand store
-
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000';
-
-// Request interceptor to add token to headers
-axios.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token;
-    if (token && config.url?.startsWith(API_BASE_URL)) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor to handle 401 errors
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Use the logout action from the store
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+import { type AxiosResponse, isAxiosError } from 'axios';
+import apiClient from './apiClient';
 
 export interface SignupRequest {
   email: string;
@@ -56,50 +29,54 @@ export interface AuthResponse {
 }
 
 class AuthService {
-  private handleError(error: any): Error {
-    if (error.response?.data?.detail) {
-      if (typeof error.response.data.detail === 'string') {
-        return new Error(error.response.data.detail);
+  private handleError(error: unknown): Error {
+    if (isAxiosError(error)) {
+      if (error.response?.data?.detail) {
+        if (typeof error.response.data.detail === 'string') {
+          return new Error(error.response.data.detail);
+        }
+        if (Array.isArray(error.response.data.detail)) {
+          const messages = error.response.data.detail.map((err: { msg: string; message: string; }) =>
+            err.msg || err.message || JSON.stringify(err)
+          );
+          return new Error(messages.join(', '));
+        }
       }
-      if (Array.isArray(error.response.data.detail)) {
-        const messages = error.response.data.detail.map((err: any) => 
-          err.msg || err.message || JSON.stringify(err)
-        );
-        return new Error(messages.join(', '));
+      if (error.response) {
+        if (error.response.status === 422) {
+          return new Error('Please check your input and try again');
+        }
+        if (error.response.status >= 500) {
+          return new Error('Server error. Please try again later.');
+        }
       }
     }
-    
-    if (error.response?.status === 422) {
-      return new Error('Please check your input and try again');
+    if (error instanceof Error) {
+      return new Error(error.message || 'An unexpected error occurred');
     }
-    
-    if (error.response?.status >= 500) {
-      return new Error('Server error. Please try again later.');
-    }
-    
-    return new Error(error.message || 'An unexpected error occurred');
+    return new Error('An unexpected error occurred');
   }
 
   async signup(userData: SignupRequest): Promise<AuthResponse> {
     try {
-      const response: AxiosResponse<AuthResponse> = await axios.post(
-        `${API_BASE_URL}/auth/signup`,
+      const response: AxiosResponse<AuthResponse> = await apiClient.post(
+        `/auth/signup`,
         userData
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.handleError(error);
     }
   }
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
-      const response: AxiosResponse<AuthResponse> = await axios.post(
-        `${API_BASE_URL}/auth/login`,
+      const response: AxiosResponse<AuthResponse> = await apiClient.post(
+        `/auth/login`,
         credentials
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.handleError(error);
     }
   }
@@ -107,7 +84,7 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       // We still call the backend logout endpoint, but state is managed by the store
-      await axios.post(`${API_BASE_URL}/auth/logout`);
+      await apiClient.post(`/auth/logout`);
     } catch (error) {
       // The store will handle the local state cleanup regardless of API success
       console.error('Logout API error:', error);
@@ -117,23 +94,23 @@ class AuthService {
 
   async getCurrentUser(): Promise<UserResponse> {
     try {
-      const response: AxiosResponse<UserResponse> = await axios.get(
-        `${API_BASE_URL}/auth/me`
+      const response: AxiosResponse<UserResponse> = await apiClient.get(
+        `/auth/me`
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.handleError(error);
     }
   }
 
   async googleLogin(tokenData: { token: string }): Promise<AuthResponse> {
     try {
-      const response: AxiosResponse<AuthResponse> = await axios.post(
-        `${API_BASE_URL}/auth/google/login`,
+      const response: AxiosResponse<AuthResponse> = await apiClient.post(
+        `/auth/google/login`,
         tokenData
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       throw this.handleError(error);
     }
   }
