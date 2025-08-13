@@ -31,6 +31,12 @@ class Certification(BaseModel):
     expiration_date: Optional[date] = None
     credential_id: Optional[str] = None
 
+class Skill(BaseModel):
+    name: str
+    category_id: str
+    category: str
+    level: str
+
 class Resume(BaseModel):
     personal_info: dict = {
         "full_name": "",
@@ -42,7 +48,7 @@ class Resume(BaseModel):
         "website": ""
     }
     professional_summary: str = ""
-    skills: List[str] = []
+    skills: List[Skill] = []
     experience: List[Experience] = []
     education: List[Education] = []
     projects: List[Project] = []
