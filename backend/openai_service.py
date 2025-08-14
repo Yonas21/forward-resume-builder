@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Dict, Any
+from datetime import date
 
 from models import Resume, JobDescription
 from core.config import settings
@@ -258,5 +259,57 @@ class OpenAIService:
         except Exception as e:
             print(f"Error generating resume: {e}")
             return Resume()
+
+    async def generate_cover_letter(self, resume: Resume, job_description: JobDescription) -> str:
+        """Generate a cover letter based on the resume and job description."""
+        
+        def date_serializer(obj):
+            if isinstance(obj, date):
+                return obj.isoformat()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+        resume_json = resume.model_dump()
+
+        prompt = f"""
+        Generate a professional cover letter based on the following resume and job description.
+
+        The cover letter should be:
+        - Tailored to the specific job description.
+        - Highlight the most relevant skills and experiences from the resume.
+        - Written in a professional and engaging tone.
+        - Formatted as a standard cover letter with a clear introduction, body, and conclusion.
+
+        Job Description:
+        Title: {job_description.title}
+        Company: {job_description.company}
+        Description: {job_description.description}
+        Requirements: {', '.join(job_description.requirements)}
+
+        Resume:
+        {json.dumps(resume_json, indent=2, default=date_serializer)}
+
+        Return only the cover letter text.
+        """
+        
+        try:
+            if not self._client:
+                raise RuntimeError("OpenAI client not initialized")
+
+            response = self._client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a professional career coach and expert cover letter writer."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                timeout=120,
+            )
+
+            cover_letter_text = response.choices[0].message.content.strip()
+            return cover_letter_text
+            
+        except Exception as e:
+            print(f"Error generating cover letter: {e}")
+            return "Error generating cover letter."
 
 openai_service = OpenAIService()
