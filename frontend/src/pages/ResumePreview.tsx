@@ -150,19 +150,25 @@ const ResumePreview: React.FC = () => {
         >
           <FiFileText className="mr-2" /> Export as JSON
         </button>
-        <button
+        {/* <button
           onClick={toggleFullScreen}
           className="flex items-center bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600"
         >
           {isFullScreen ? <FiMinimize className="mr-2" /> : <FiMaximize className="mr-2" />}
           {isFullScreen ? 'Exit Full Screen' : 'Full Screen Preview'}
-        </button>
-        <button
+        </button> */}
+        <Link
+          to="/cover-letter"
+          className="flex items-center bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600"
+        >
+          <FiFileText className="mr-2" /> Generate Cover Letter
+        </Link>
+        {/* <button
           onClick={togglePrintGuide}
           className="flex items-center bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
         >
           <FiDownload className="mr-2" /> {showPrintGuide ? 'Hide Print Guide' : 'Show Print Guide'}
-        </button>
+        </button> */}
       </div>
 
       {showPrintGuide && (
