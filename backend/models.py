@@ -71,6 +71,10 @@ class GenerateResumeRequest(BaseModel):
     job_description: JobDescription
     user_background: Optional[str] = None
 
+class GenerateCoverLetterRequest(BaseModel):
+    resume: Resume
+    job_description: JobDescription
+
 class User(BaseModel):
     id: int
     email: str
