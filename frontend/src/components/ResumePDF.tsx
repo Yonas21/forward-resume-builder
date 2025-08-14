@@ -234,7 +234,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ resume, sectionOrder = ['personal
             <View style={styles.skillsContainer}>
               {resume.skills.map((skill, index) => (
                 <Text key={index} style={styles.skillItem}>
-                  {skill.name} ({skill.level})
+                  {skill.toString()}
                 </Text>
               ))}
             </View>
