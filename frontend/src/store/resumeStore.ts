@@ -119,15 +119,8 @@ export const useResumeStore = create<ResumeState>()(
 
   fetchUserResume: async (userId: string) => {
         try {
-          const userResumes = await resumeService.getUserResumes(userId);
-          if (userResumes.resumes.length > 0) {
-            // Assuming we want to load the first resume if multiple exist
-            const firstResume = userResumes.resumes[0];
-            set({ resume: firstResume });
-          } else {
-            // No resumes found, initialize with sample data
-            set({ resume: sampleResume });
-          }
+          const myResume = await resumeService.getMyResume();
+          set({ resume: myResume });
         } catch (error) {
           console.error("Failed to fetch user resumes:", error);
           // Fallback to sample data on error as well
