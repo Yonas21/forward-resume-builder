@@ -15,6 +15,7 @@ import DragDropTest from './components/DragDropTest';
 import Signup from './components/Signup';
 import Login from './components/Login';
 import PasswordReset from './components/PasswordReset';
+import CoverLetter from './pages/CoverLetter';
 
 function App() {
   const [highContrast, setHighContrast] = useState(false);
@@ -73,6 +74,13 @@ function App() {
                   <PasswordReset />
                 </main>
               </PublicRoute>
+            } />
+            <Route path="/cover-letter" element={
+              <ProtectedRoute>
+                <main id="main">
+                  <CoverLetter />
+                </main>
+              </ProtectedRoute>
             } />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
