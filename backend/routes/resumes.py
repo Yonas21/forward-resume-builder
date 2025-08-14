@@ -6,7 +6,7 @@ from typing import List
 import logging
 
 from schemas.requests import ResumeUpdateRequest
-from models import OptimizeResumeRequest, GenerateResumeRequest, ParseResumeRequest
+from models import OptimizeResumeRequest, GenerateResumeRequest, ParseResumeRequest, GenerateCoverLetterRequest
 from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem, ResumeVersionResponse, SuccessResponse
 from database import User
 from db_service import ResumeService
@@ -323,6 +323,18 @@ async def generate_resume(request: GenerateResumeRequest):
     except Exception as e:
         logger.error(f"Error generating resume: {e}")
         raise HTTPException(status_code=500, detail="Error generating resume")
+
+@ai_router.post("/generate-cover-letter")
+async def generate_cover_letter(request: GenerateCoverLetterRequest):
+    """Generate a cover letter based on resume and job description."""
+    try:
+        cover_letter = await openai_service.generate_cover_letter(
+            request.resume, request.job_description
+        )
+        return {"cover_letter": cover_letter}
+    except Exception as e:
+        logger.error(f"Error generating cover letter: {e}")
+        raise HTTPException(status_code=500, detail="Error generating cover letter")
 
 # Include AI router in main resume router
 router.include_router(ai_router)
