@@ -22,6 +22,14 @@ class ResumeService {
     );
     return response.data;
   }
+
+  async generateCoverLetter(resume: Resume, jobDescription: { title: string, company: string, description: string, requirements: string[] }): Promise<{ cover_letter: string }> {
+    const response: AxiosResponse<{ cover_letter: string }> = await apiClient.post(
+      '/resumes/ai/generate-cover-letter',
+      { resume, job_description: jobDescription }
+    );
+    return response.data;
+  }
 }
 
 export const resumeService = new ResumeService();
