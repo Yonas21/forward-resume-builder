@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
+from enum import Enum
 
 class Education(BaseModel):
     institution: str
@@ -31,22 +32,29 @@ class Certification(BaseModel):
     expiration_date: Optional[date] = None
     credential_id: Optional[str] = None
 
+class SkillLevel(str, Enum):
+    beginner = "beginner"
+    intermediate = "intermediate"
+    advanced = "advanced"
+    expert = "expert"
+
 class Skill(BaseModel):
     name: str
     category_id: str
     category: str
-    level: str
+    level: SkillLevel
+
+class PersonalInfo(BaseModel):
+    full_name: str = ""
+    email: str = ""
+    phone: str = ""
+    location: str = ""
+    linkedin: str = ""
+    github: str = ""
+    website: str = ""
 
 class Resume(BaseModel):
-    personal_info: dict = {
-        "full_name": "",
-        "email": "",
-        "phone": "",
-        "location": "",
-        "linkedin": "",
-        "github": "",
-        "website": ""
-    }
+    personal_info: PersonalInfo = PersonalInfo()
     professional_summary: str = ""
     skills: List[Skill] = []
     experience: List[Experience] = []
