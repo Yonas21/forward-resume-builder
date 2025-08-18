@@ -61,6 +61,7 @@ export interface Resume {
   education: Education[];
   projects: Project[];
   certifications: Certification[];
+  section_order?: string[];
 
   template_id?: string;
   font_family?: string;

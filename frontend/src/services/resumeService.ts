@@ -30,6 +30,25 @@ class ResumeService {
     );
     return response.data;
   }
+
+  async updateResume(resume: Resume): Promise<Resume> {
+    const response: AxiosResponse<Resume> = await apiClient.put(
+      `/resumes/my-resume`,
+      resume
+    );
+    return response.data;
+  }
+
+  async scoreResume(resume: Resume, jobDescription?: string): Promise<{ score: number; feedback: string[]; suggestions: string[] }> {
+    const response: AxiosResponse<{ score: number; feedback: string[]; suggestions: string[] }> = await apiClient.post(
+      '/resumes/score',
+      { 
+        resume: resume, 
+        job_description: jobDescription 
+      }
+    );
+    return response.data;
+  }
 }
 
 export const resumeService = new ResumeService();

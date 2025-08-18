@@ -25,6 +25,8 @@ interface ResumeState {
   updateSkill: (index: number, updates: Partial<Skill>) => void;
   deleteSkill: (index: number) => void;
   updateSkills: (skills: Skill[]) => void;
+  updateSectionOrder: (sectionOrder: string[]) => void;
+  fetchMyResume: () => Promise<void>;
   fetchUserResume: (userId: string) => Promise<void>;
 }
 
@@ -104,6 +106,10 @@ export const useResumeStore = create<ResumeState>()(
 
       updateSkills: (skills) => set(state => ({
         resume: { ...state.resume, skills }
+      })),
+
+      updateSectionOrder: (sectionOrder) => set(state => ({
+        resume: { ...state.resume, section_order: sectionOrder }
       })),
 
       fetchMyResume: async () => {
