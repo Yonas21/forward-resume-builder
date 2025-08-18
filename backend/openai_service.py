@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
 from datetime import date
 
 from models import Resume, JobDescription
@@ -311,5 +311,85 @@ class OpenAIService:
         except Exception as e:
             print(f"Error generating cover letter: {e}")
             return "Error generating cover letter."
+
+    async def score_resume(self, resume: Resume, job_description: str = None) -> Dict[str, Any]:
+        """Score a resume and provide feedback using AI."""
+        
+        def date_serializer(obj):
+            if isinstance(obj, date):
+                return obj.isoformat()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+        resume_json = resume.model_dump()
+
+        job_context = ""
+        if job_description:
+            job_context = f"""
+            Job Description Context:
+            {job_description}
+            
+            Please evaluate how well this resume matches the job requirements.
+            """
+
+        prompt = f"""
+        Analyze the following resume and provide a comprehensive score and feedback.
+
+        {job_context}
+
+        Resume:
+        {json.dumps(resume_json, indent=2, default=date_serializer)}
+
+        Please provide a detailed analysis including:
+        1. Overall score (0-100)
+        2. Strengths and positive aspects
+        3. Areas for improvement
+        4. Specific suggestions for enhancement
+
+        Return a JSON object with the following structure:
+        {{
+            "score": 85,
+            "feedback": [
+                "Strong technical skills section",
+                "Clear and concise professional summary",
+                "Good use of action verbs in experience descriptions"
+            ],
+            "suggestions": [
+                "Add more quantifiable achievements",
+                "Include relevant certifications",
+                "Consider adding a projects section"
+            ]
+        }}
+        """
+        
+        try:
+            if not self._client:
+                raise RuntimeError("OpenAI client not initialized")
+
+            response = self._client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a professional resume reviewer and career coach with expertise in evaluating resumes for various industries and positions."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                timeout=60,
+            )
+
+            content = response.choices[0].message.content.strip()
+            if content.startswith("```json"):
+                content = content[7:]
+            if content.endswith("```"):
+                content = content[:-3]
+            
+            score_result = json.loads(content)
+            return score_result
+            
+        except Exception as e:
+            print(f"Error scoring resume: {e}")
+            return {
+                "score": 50,
+                "feedback": ["Unable to analyze resume due to technical issues"],
+                "suggestions": ["Please try again later or contact support"]
+            }
 
 openai_service = OpenAIService()
