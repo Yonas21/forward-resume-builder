@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List
 import logging
 
-from schemas.requests import ResumeUpdateRequest
+from schemas.requests import ResumeUpdateRequest, ResumeScoreRequest
 from models import OptimizeResumeRequest, GenerateResumeRequest, ParseResumeRequest, GenerateCoverLetterRequest
 from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem, ResumeVersionResponse, SuccessResponse
 from database import User
@@ -139,6 +139,47 @@ async def get_resume(
     except Exception as e:
         logger.error(f"Error fetching resume {resume_id}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching resume")
+
+@router.put("/my-resume", response_model=ResumeResponse)
+async def update_my_resume(
+    resume_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Update the user's most recent resume."""
+    try:
+        resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
+        if not resumes:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        resume = resumes[0]
+        updated_resume = await ResumeService.update_resume(
+            resume_id=str(resume.id),
+            user_id=str(current_user.id),
+            updates=resume_data
+        )
+        
+        return ResumeResponse(
+            id=str(updated_resume.id),
+            title=updated_resume.title,
+            is_default=updated_resume.is_default,
+            personal_info=updated_resume.personal_info.dict(),
+            professional_summary=updated_resume.professional_summary,
+            skills=updated_resume.skills,
+            experience=[exp.dict() for exp in updated_resume.experience],
+            education=[edu.dict() for edu in updated_resume.education],
+            projects=[proj.dict() for proj in updated_resume.projects],
+            certifications=[cert.dict() for cert in updated_resume.certifications],
+            template_id=updated_resume.template_id,
+            font_family=updated_resume.font_family,
+            accent_color=updated_resume.accent_color,
+            created_at=updated_resume.created_at,
+            updated_at=updated_resume.updated_at
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating resume for user {current_user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Error updating resume")
 
 @router.put("/{resume_id}", response_model=SuccessResponse)
 async def update_resume(
@@ -335,6 +376,33 @@ async def generate_cover_letter(request: GenerateCoverLetterRequest):
     except Exception as e:
         logger.error(f"Error generating cover letter: {e}")
         raise HTTPException(status_code=500, detail="Error generating cover letter")
+
+@router.post("/score", response_model=dict)
+async def score_resume(
+    request: ResumeScoreRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Score a resume and provide feedback using AI."""
+    try:
+        # Convert dict to Resume model for the service
+        from models import Resume
+        try:
+            resume_model = Resume(**request.resume)
+        except Exception as validation_error:
+            logger.error(f"Resume validation error: {validation_error}")
+            raise HTTPException(status_code=400, detail=f"Invalid resume data: {str(validation_error)}")
+        
+        # Use OpenAI service to analyze the resume
+        score_result = await openai_service.score_resume(
+            resume=resume_model,
+            job_description=request.job_description
+        )
+        return score_result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error scoring resume: {e}")
+        raise HTTPException(status_code=500, detail="Error scoring resume")
 
 # Include AI router in main resume router
 router.include_router(ai_router)
