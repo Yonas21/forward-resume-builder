@@ -20,6 +20,8 @@ interface LeftSidebarProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
   sensors: any;
+  onStartOnboarding?: () => void;
+  hasCompletedOnboarding?: boolean;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -34,9 +36,29 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   activeSection,
   setActiveSection,
   sensors,
+  onStartOnboarding,
+  hasCompletedOnboarding,
 }) => {
   return (
     <div className="lg:col-span-1 space-y-6">
+      {/* Onboarding button for new users */}
+      {!hasCompletedOnboarding && onStartOnboarding && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-blue-900">New to Resume Builder?</h3>
+              <p className="text-xs text-blue-700 mt-1">Take a quick tour to get started</p>
+            </div>
+            <button
+              onClick={onStartOnboarding}
+              className="bg-blue-600 text-white text-xs px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Start Tour
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Template Selector */}
       <TemplateSelector
         selectedTemplate={selectedTemplate}

@@ -1,8 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../hooks/useOnboarding';
+import { OnboardingOverlay } from '../components/OnboardingOverlay';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { 
+    hasCompletedOnboarding, 
+    startOnboarding, 
+    isOnboardingActive, 
+    currentStep, 
+    nextStep, 
+    previousStep, 
+    skipOnboarding, 
+    currentStepIndex, 
+    totalSteps 
+  } = useOnboarding();
+
+  // Auto-start onboarding for new users
+  useEffect(() => {
+    if (!hasCompletedOnboarding) {
+      const timer = setTimeout(() => {
+        startOnboarding();
+      }, 2000); // Start after 2 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasCompletedOnboarding, startOnboarding]);
 
   const handleOptionClick = (option: 'templates' | 'upload' | 'generate') => {
     localStorage.setItem('resumeFlow', option);
@@ -15,6 +39,16 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Onboarding overlay */}
+      <OnboardingOverlay
+        isActive={isOnboardingActive}
+        currentStep={currentStep}
+        onNext={nextStep}
+        onPrevious={previousStep}
+        onSkip={skipOnboarding}
+        currentStepIndex={currentStepIndex}
+        totalSteps={totalSteps}
+      />
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center">
