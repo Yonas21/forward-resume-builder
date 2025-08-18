@@ -34,14 +34,45 @@ export const professions = [
 ];
 
 export const skillCategories = [
-  { id: 'technical', name: 'Technical Skills', icon: '💻' },
-  { id: 'soft', name: 'Soft Skills', icon: '🤝' },
-  { id: 'languages', name: 'Languages', icon: '🌍' },
-  { id: 'tools', name: 'Tools & Platforms', icon: '🛠️' },
-  { id: 'frameworks', name: 'Frameworks & Libraries', icon: '📚' },
-  { id: 'databases', name: 'Databases', icon: '🗄️' },
-  { id: 'cloud', name: 'Cloud & DevOps', icon: '☁️' },
-  { id: 'design', name: 'Design & Creative', icon: '🎨' }
+  // Core Technical Skills
+  { id: 'programming', name: 'Programming Languages', icon: '💻', description: 'Programming and scripting languages' },
+  { id: 'frameworks', name: 'Frameworks & Libraries', icon: '📚', description: 'Development frameworks and libraries' },
+  { id: 'databases', name: 'Databases & Storage', icon: '🗄️', description: 'Database systems and data storage' },
+  { id: 'cloud', name: 'Cloud & DevOps', icon: '☁️', description: 'Cloud platforms and DevOps tools' },
+  
+  // Data & Analytics
+  { id: 'data_analysis', name: 'Data Analysis', icon: '📊', description: 'Data analysis and visualization tools' },
+  { id: 'machine_learning', name: 'Machine Learning', icon: '🤖', description: 'ML and AI technologies' },
+  { id: 'statistics', name: 'Statistics & Math', icon: '📈', description: 'Statistical analysis and mathematics' },
+  
+  // Design & Creative
+  { id: 'design', name: 'Design & Creative', icon: '🎨', description: 'Design tools and creative skills' },
+  { id: 'ui_ux', name: 'UI/UX Design', icon: '🎯', description: 'User interface and experience design' },
+  { id: 'graphics', name: 'Graphics & Media', icon: '🖼️', description: 'Graphic design and media tools' },
+  
+  // Business & Management
+  { id: 'project_management', name: 'Project Management', icon: '📋', description: 'Project management methodologies' },
+  { id: 'business_analysis', name: 'Business Analysis', icon: '📊', description: 'Business analysis and strategy' },
+  { id: 'marketing', name: 'Marketing & Sales', icon: '📢', description: 'Marketing and sales skills' },
+  
+  // Tools & Platforms
+  { id: 'tools', name: 'Tools & Platforms', icon: '🛠️', description: 'Development and productivity tools' },
+  { id: 'operating_systems', name: 'Operating Systems', icon: '💾', description: 'OS and platform knowledge' },
+  { id: 'version_control', name: 'Version Control', icon: '📝', description: 'Version control systems' },
+  
+  // Soft Skills
+  { id: 'communication', name: 'Communication', icon: '💬', description: 'Communication and presentation skills' },
+  { id: 'leadership', name: 'Leadership', icon: '👥', description: 'Leadership and team management' },
+  { id: 'problem_solving', name: 'Problem Solving', icon: '🧩', description: 'Analytical and problem-solving skills' },
+  
+  // Languages
+  { id: 'languages', name: 'Languages', icon: '🌍', description: 'Spoken and written languages' },
+  
+  // Industry Specific
+  { id: 'finance', name: 'Finance & Accounting', icon: '💰', description: 'Financial and accounting skills' },
+  { id: 'healthcare', name: 'Healthcare', icon: '🏥', description: 'Healthcare and medical knowledge' },
+  { id: 'education', name: 'Education', icon: '📚', description: 'Teaching and educational skills' },
+  { id: 'legal', name: 'Legal', icon: '⚖️', description: 'Legal and compliance knowledge' }
 ];
 
 export const skillLevels = [
