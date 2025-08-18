@@ -85,3 +85,9 @@ class ParseResumeRequest(BaseModel):
     file_content: str
     file_name: str
     file_type: str
+
+
+class ResumeScoreRequest(BaseModel):
+    """Resume scoring request model."""
+    resume: Dict[str, Any]
+    job_description: Optional[str] = None
