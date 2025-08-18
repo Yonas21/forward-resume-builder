@@ -36,6 +36,10 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
     return skillCategories.find(cat => cat.id === categoryId)?.icon || '📋';
   };
 
+  const getCategoryDescription = (categoryId: string) => {
+    return skillCategories.find(cat => cat.id === categoryId)?.description || '';
+  };
+
   const getLevelColor = (level: Skill['level']) => {
     return skillLevels.find(l => l.value === level)?.color || 'bg-gray-100 text-gray-800';
   };
@@ -94,25 +98,36 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
       <h2 className="text-lg font-semibold mb-2 border-b" style={{ color }}>
         Skills
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-          <div key={category} className="border-l-2 pl-3" style={{ borderColor: color }}>
-            <div className="flex items-center mb-1">
-              <span className="mr-2">{getCategoryIcon(category)}</span>
-              <h3 className="text-sm font-medium text-gray-900">
-                {getCategoryName(category)}
-              </h3>
+          <div key={category} className="border-l-4 pl-4 py-2" style={{ borderColor: color }}>
+            <div className="flex items-center mb-2">
+              <span className="mr-2 text-lg">{getCategoryIcon(category)}</span>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  {getCategoryName(category) ? "Technical Skills" : "Other Skills"}
+                </h3>
+                {getCategoryDescription(category) && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {getCategoryDescription(category) ?? "Languages"}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2">
               {categorySkills.slice(0, maxSkillsPerCategory).map((skill, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-1 rounded text-xs"
-                  style={{ backgroundColor: `${color}15`, color: color }}
+                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm"
+                  style={{ 
+                    backgroundColor: `${color}15`, 
+                    color: color,
+                    border: `1px solid ${color}30`
+                  }}
                 >
                   {skill.toString()}
                   {showLevels && skill.level !== 'intermediate' && (
-                    <span className={`ml-1 px-1 py-0.5 rounded text-xs ${getLevelColor(skill.level)}`}>
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${getLevelColor(skill.level)}`}>
                       {getLevelLabel(skill.level)}
                     </span>
                   )}
