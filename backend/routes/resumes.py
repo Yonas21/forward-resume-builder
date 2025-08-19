@@ -11,7 +11,6 @@ from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem
 from database import User
 from db_service import ResumeService
 from routes.auth import get_current_user
-from gemini_service import gemini_service
 from openai_service import openai_service
 from file_parser import file_parser
 
@@ -306,7 +305,7 @@ async def parse_and_save_resume(
             raise HTTPException(status_code=400, detail="Failed to parse the uploaded file")
         
         pre_processed_data = file_parser.pre_process_resume(resume_text)
-        structured_resume = await gemini_service.parse_resume(
+        structured_resume = await openai_service.parse_resume(
             resume_text,
             pre_processed_hints=pre_processed_data
         )
