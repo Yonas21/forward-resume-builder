@@ -15,8 +15,11 @@ except Exception:  # pragma: no cover - fallback import for older SDKs
 
 class OpenAIService:
     def __init__(self):
-        self.model = settings.openai_model
-        self._client = OpenAI(api_key=settings.openai_api_key) if OpenAI else None
+        self.model = settings.open_router_model
+        self._client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.open_router_key,
+        ) if OpenAI else None
     
     async def parse_resume(self, resume_text: str, pre_processed_hints: Dict[str, Any] = None) -> Resume:
         """Parse resume text and extract structured information
@@ -115,6 +118,11 @@ class OpenAIService:
                 raise RuntimeError("OpenAI client not initialized")
 
             response = self._client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "https://resume-builder.local",  # Optional. Site URL for rankings on openrouter.ai.
+                    "X-Title": "Resume Builder",  # Optional. Site title for rankings on openrouter.ai.
+                },
+                extra_body={},
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a resume parsing expert. Extract structured information from resumes and return valid JSON. Pay special attention to the pre-processed hints provided, but verify all information against the original text."},
@@ -168,6 +176,11 @@ class OpenAIService:
                 raise RuntimeError("OpenAI client not initialized")
 
             response = self._client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "https://resume-builder.local",
+                    "X-Title": "Resume Builder",
+                },
+                extra_body={},
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional resume writer. Optimize resumes to match job descriptions while maintaining accuracy and professionalism."},
@@ -238,6 +251,11 @@ class OpenAIService:
                 raise RuntimeError("OpenAI client not initialized")
 
             response = self._client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "https://resume-builder.local",
+                    "X-Title": "Resume Builder",
+                },
+                extra_body={},
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional resume writer. Create resume templates that match job requirements."},
@@ -296,6 +314,11 @@ class OpenAIService:
                 raise RuntimeError("OpenAI client not initialized")
 
             response = self._client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "https://resume-builder.local",
+                    "X-Title": "Resume Builder",
+                },
+                extra_body={},
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional career coach and expert cover letter writer."},
@@ -366,6 +389,11 @@ class OpenAIService:
                 raise RuntimeError("OpenAI client not initialized")
 
             response = self._client.chat.completions.create(
+                extra_headers={
+                    "HTTP-Referer": "https://resume-builder.local",
+                    "X-Title": "Resume Builder",
+                },
+                extra_body={},
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional resume reviewer and career coach with expertise in evaluating resumes for various industries and positions."},
