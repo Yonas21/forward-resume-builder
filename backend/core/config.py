@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     openai_api_key: str
     openai_model: str = "gpt-3.5-turbo"
 
+    # OpenRouter
+    open_router_key: str
+    open_router_model: str = "openai/gpt-oss-20b:free"
+
     # Groq
     groq_api_key: str
     groq_model: str = "llama3-8b-8192"
