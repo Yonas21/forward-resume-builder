@@ -8,6 +8,7 @@ interface AuthState {
   user: UserResponse | null;
   token: string | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   isLoading: boolean;
   error: string | null;
   login: (credentials: LoginRequest) => Promise<void>;
@@ -16,6 +17,7 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   clearError: () => void;
   setAuthData: (token: string, user: UserResponse) => void;
+  continueAsGuest: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,10 +25,19 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      isGuest: false,
       isLoading: true,
       error: null,
 
       initializeAuth: async () => {
+        // Restore guest session from sessionStorage
+        try {
+          const guest = sessionStorage.getItem('guest_mode') === 'true';
+          if (guest) {
+            set({ isGuest: true, isAuthenticated: true, isLoading: false });
+            return;
+          }
+        } catch {}
         const token = get().token;
         if (token) {
           try {
@@ -70,7 +81,8 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout API call failed, proceeding with local logout.', error);
         } finally {
-          set({ user: null, token: null, isAuthenticated: false, isLoading: false, error: null });
+          try { sessionStorage.removeItem('guest_mode'); } catch {}
+          set({ user: null, token: null, isAuthenticated: false, isGuest: false, isLoading: false, error: null });
         }
       },
 
@@ -101,11 +113,17 @@ export const useAuthStore = create<AuthState>()(
           user: user,
           token: token,
           isAuthenticated: true,
+          isGuest: false,
           isLoading: false,
           error: null, // Clear any previous errors on successful auth
         });
         // Fetch user's resume after successful authentication
         useResumeStore.getState().fetchUserResume(user.id);
+      },
+
+      continueAsGuest: () => {
+        try { sessionStorage.setItem('guest_mode', 'true'); } catch {}
+        set({ user: null, token: null, isAuthenticated: true, isGuest: true, isLoading: false, error: null });
       },
     })
 );

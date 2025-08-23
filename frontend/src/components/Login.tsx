@@ -9,7 +9,7 @@ const Login: React.FC = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
   
-                    const { login, isLoading, error, clearError, setAuthData } = useAuthStore();
+                    const { login, isLoading, error, clearError, setAuthData, continueAsGuest } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -210,6 +210,12 @@ const Login: React.FC = () => {
         </div>
 
         <div className="bg-white py-8 px-6 shadow-xl rounded-xl space-y-6 text-center">
+          <button
+            onClick={() => { continueAsGuest(); navigate(from, { replace: true }); }}
+            className="w-full mb-4 inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Continue as guest
+          </button>
           <GoogleLogin
             onSuccess={async credentialResponse => {
               if (credentialResponse.credential) {
