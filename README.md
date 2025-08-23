@@ -892,6 +892,7 @@ def mock_openai_response():
 - **Architecture Decision Records**: `docs/adr/`
 - **Runbooks**: `docs/operations/`
 - **User Guide**: `docs/user-guide.md`
+- **Screenshots & Demo Guide**: `docs/demo-guide.md`
 
 ### Community
 - **Issues**: GitHub Issues for bug reports

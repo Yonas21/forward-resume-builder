@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { OnboardingOverlay } from '../components/OnboardingOverlay';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { continueAsGuest } = useAuthStore();
   const { 
     hasCompletedOnboarding, 
     startOnboarding, 
@@ -108,6 +110,22 @@ const Home: React.FC = () => {
               <h3 className="font-semibold text-gray-900 mb-1">Export ATS-Ready</h3>
               <p className="text-sm text-gray-600">Download PDF/JSON. Create multiple versions and switch fast per job.</p>
             </div>
+          </div>
+        </div>
+
+        {/* Guest mode */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-3 md:mb-0 md:mr-4 text-center md:text-left">
+              <h3 className="font-semibold text-gray-900">Just exploring?</h3>
+              <p className="text-sm text-gray-600">Try the builder without signing up. You can save later.</p>
+            </div>
+            <button
+              onClick={() => { continueAsGuest(); navigate('/templates'); }}
+              className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Continue as guest
+            </button>
           </div>
         </div>
 
