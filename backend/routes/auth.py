@@ -16,6 +16,7 @@ import secrets
 
 from core.config import settings
 from utils.rate_limiter import rate_limit_ip
+from utils.redis_rate_limiter import redis_rate_limiter
 from schemas.requests import UserSignupRequest, UserLoginRequest, PasswordResetRequest, PasswordResetConfirm
 from schemas.responses import AuthResponse, UserResponse, SuccessResponse
 from database import User
@@ -156,6 +157,13 @@ async def login(login_data: UserLoginRequest, response: Response):
             )
         
         if not UserService.verify_password(login_data.password, user.hashed_password):
+            # Basic backoff with Redis if available
+            if redis_rate_limiter.client:
+                failure_key = f"auth_fail:{login_data.email}:{settings.host}"
+                count = redis_rate_limiter.client.incr(failure_key)
+                ttl = redis_rate_limiter.backoff(failure_key, int(count))
+                redis_rate_limiter.client.expire(failure_key, ttl)
+            
             raise HTTPException(
                 status_code=401,
                 detail="Incorrect email or password"
