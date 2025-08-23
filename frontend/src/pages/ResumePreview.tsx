@@ -271,7 +271,7 @@ const ResumePreview: React.FC = () => {
   // };
 
   return (
-    <div className={`transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-50 bg-white overflow-auto' : 'max-w-4xl mx-auto py-8 px-4'}`}>
+    <div className={`transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-50 bg-white overflow-auto' : 'max-w-4xl mx-auto py-4 md:py-8 px-2 md:px-4'}`}>
       {isUsingSampleData && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg no-print">
           <h3 className="font-bold text-lg mb-2 text-blue-700">Data Analyst Resume Template</h3>
@@ -285,7 +285,7 @@ const ResumePreview: React.FC = () => {
         </div>
       )}
       
-      <div className="mb-6 no-print flex flex-wrap gap-3 sticky top-0 bg-white z-10 p-2 border-b border-gray-200">
+      <div className="mb-4 md:mb-6 no-print flex flex-wrap gap-2 md:gap-3 sticky top-0 bg-white z-10 p-2 border-b border-gray-200">
         <button
           onClick={handleExportPDF}
           className="flex items-center bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
@@ -440,7 +440,7 @@ const ResumePreview: React.FC = () => {
           </div>
           <div
             className={`bg-white shadow-lg ${!isFullScreen ? 'rounded-lg origin-top transform' : ''} print:shadow-none`}
-            style={{ width: '816px', minHeight: '1056px', scale: `${zoom}%` }}
+            style={{ width: '100%', maxWidth: '816px', minHeight: '1056px', scale: `${zoom}%` }}
           >
             <div className={`${font}`} style={{ padding: pagePadding }}>
               <SelectedTemplate 

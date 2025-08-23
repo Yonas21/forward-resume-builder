@@ -198,9 +198,9 @@ const ResumeBuilder: React.FC = () => {
         totalSteps={onboarding.totalSteps}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 space-y-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+          <div className="lg:col-span-1 space-y-4 md:space-y-6 order-2 lg:order-1">
             <LeftSidebar
               selectedTemplate={selectedTemplate}
               setSelectedTemplate={setSelectedTemplate}
@@ -256,7 +256,7 @@ const ResumeBuilder: React.FC = () => {
         </div>
 
         {/* Resume scoring section */}
-        <div className="mt-8">
+        <div className="mt-4 md:mt-8">
           <ResumeScoring />
         </div>
       </div>

@@ -26,8 +26,9 @@ apiClient.interceptors.response.use(
       // Try refresh token flow once
       if (!error.config.__isRetryRequest) {
         error.config.__isRetryRequest = true;
+        const csrf = typeof document !== 'undefined' ? (document.cookie.match(/(?:^|; )csrf_token=([^;]+)/)?.[1] || '') : '';
         return axios
-          .post(`${API_BASE_URL}/auth/refresh-token`, null, { withCredentials: true })
+          .post(`${API_BASE_URL}/auth/refresh-token`, null, { withCredentials: true, headers: { 'x-csrf-token': csrf } })
           .then((res) => {
             const newToken = res.data?.access_token;
             if (newToken) {

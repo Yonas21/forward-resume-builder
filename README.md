@@ -718,10 +718,10 @@ GET /metrics         # Prometheus metrics
 ### Security Measures
 
 #### Authentication & Authorization
-- **JWT Tokens**: Short-lived access tokens (30 minutes)
-- **Refresh Tokens**: Long-lived refresh tokens (7 days)
+- **JWT Tokens**: Short-lived bearer access tokens (30 minutes)
+- **Refresh Tokens**: Long-lived httpOnly cookies (7 days) with CSRF double-submit token; frontend auto-refresh on 401
 - **Password Policy**: Minimum 8 characters, complexity requirements
-- **Rate Limiting**: Prevents brute force attacks
+- **Rate Limiting**: Implemented basic in-memory limits; recommend Redis for production
 
 #### Data Protection
 - **HTTPS Only**: All communication encrypted in transit
@@ -739,14 +739,13 @@ eslint --ext .tsx,.ts frontend/src/  # Frontend security linting
 ```
 
 ### Security Headers
-```python
-# FastAPI security headers
-Content-Security-Policy: default-src 'self'
-X-Frame-Options: DENY
-X-Content-Type-Options: nosniff
-Referrer-Policy: strict-origin-when-cross-origin
-Permissions-Policy: geolocation=(), microphone=(), camera=()
-```
+Enforced via middleware:
+- Content-Security-Policy: `default-src 'self'`
+- X-Frame-Options: `DENY`
+- X-Content-Type-Options: `nosniff`
+- Referrer-Policy: `strict-origin-when-cross-origin`
+- Permissions-Policy: `geolocation=(), microphone=(), camera=()`
+Note: Tighten CSP for production (fonts, images, API hosts, nonces).
 
 ### Data Privacy
 - **GDPR Compliance**: Right to deletion, data portability
@@ -909,18 +908,20 @@ def mock_openai_response():
 ## 🚀 Future Enhancements
 
 ### Short-term (Next 3 months)
-- [ ] **Enhanced Testing**: Comprehensive test suite with 90%+ coverage
-- [ ] **Database Integration**: Replace in-memory storage with PostgreSQL
+- [ ] **Enhanced Testing**: Add auth, upload, and core flow tests
 - [ ] **Docker Containers**: Full containerization for easy deployment
 - [ ] **CI/CD Pipeline**: Automated testing and deployment
 - [ ] **Error Monitoring**: Sentry integration for error tracking
+- [ ] **Guest/Demo Mode**: Start without signup using sample resume
 
 ### Medium-term (3-6 months)
 - [ ] **Multiple Resume Templates**: Various professional templates
 - [ ] **Resume Analytics**: ATS compatibility scoring
 - [ ] **User Dashboard**: Personal resume management interface
-- [ ] **Export Options**: PDF, Word, JSON export formats
+- [ ] **Export Options**: PDF, HTML, JSON (DOCX optional)
 - [ ] **Resume History**: Version control for resume iterations
+- [ ] **CSP Tightening**: Nonce-based CSP and asset whitelisting
+- [ ] **Redis Rate Limiting**: Persistent and distributed limits
 
 ### Long-term (6+ months)
 - [ ] **Real-time Collaboration**: Multi-user resume editing

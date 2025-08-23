@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+// no persisted storage for access token (memory-only)
 import { authService } from '../services/authService';
 import type { UserResponse, LoginRequest, SignupRequest } from '../services/authService';
 import { useResumeStore } from './resumeStore';
@@ -19,8 +19,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+  (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -108,13 +107,7 @@ export const useAuthStore = create<AuthState>()(
         // Fetch user's resume after successful authentication
         useResumeStore.getState().fetchUserResume(user.id);
       },
-    }),
-    {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ token: state.token, user: state.user }),
-    }
-  )
+    })
 );
 
 useAuthStore.getState().initializeAuth();
