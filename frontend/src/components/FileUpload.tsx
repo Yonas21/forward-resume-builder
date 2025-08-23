@@ -15,6 +15,22 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { setResume } = useResumeStore();
+  const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+  const allowedExtensions = ['.pdf', '.docx', '.txt'];
+
+  const validateFile = (file: File): boolean => {
+    const nameLower = file.name.toLowerCase();
+    const hasAllowedExt = allowedExtensions.some((ext) => nameLower.endsWith(ext));
+    if (!hasAllowedExt) {
+      toast.error('Unsupported file type. Use PDF, DOCX, or TXT.');
+      return false;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error('File too large. Max size is 10MB.');
+      return false;
+    }
+    return true;
+  };
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -32,14 +48,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
+      if (validateFile(file)) setSelectedFile(file);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setSelectedFile(file);
+      if (validateFile(file)) setSelectedFile(file);
     }
   };
 
@@ -52,9 +68,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
       // Persist parsed resume into the central store
       setResume(parsedResume);
       navigate('/builder');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error parsing resume:', error);
-      toast.error('Failed to parse resume. Please try again.');
+      if (error?.response?.status === 401) {
+        // Redirect handled globally; avoid duplicate toasts
+        return;
+      }
+      const serverDetail = error?.response?.data?.detail;
+      toast.error(serverDetail ? `Failed to parse: ${serverDetail}` : 'Failed to parse resume. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -112,12 +133,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
               <input
                 type="file"
                 className="hidden"
-                accept=".pdf,.docx"
+                accept=".pdf,.docx,.txt"
                 onChange={handleFileChange}
               />
             </label>
           </p>
-          <p className="text-sm text-gray-500">Supported formats: PDF, DOCX</p>
+          <p className="text-sm text-gray-500">Supported formats: PDF, DOCX, TXT</p>
         </div>
       </div>
 

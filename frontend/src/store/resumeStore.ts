@@ -123,7 +123,7 @@ export const useResumeStore = create<ResumeState>()(
     }
   },
 
-  fetchUserResume: async (userId: string) => {
+  fetchUserResume: async (_userId: string) => {
         try {
           const myResume = await resumeService.getMyResume();
           set({ resume: myResume });

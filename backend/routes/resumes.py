@@ -1,7 +1,7 @@
 """
 Resume management routes for the Resume Builder API.
 """
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Request
 from typing import List
 import logging
 
@@ -11,13 +11,14 @@ from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem
 from database import User
 from db_service import ResumeService
 from routes.auth import get_current_user
+from utils.rate_limiter import rate_limit_ip, rate_limit_user
 from openai_service import openai_service
 from file_parser import file_parser
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 
-@router.post("", response_model=ResumeListItem)
+@router.post("", response_model=ResumeListItem, dependencies=[Depends(rate_limit_user(120, 60))])
 async def create_resume(
     title: str = "My Resume",
     current_user: User = Depends(get_current_user)
@@ -40,7 +41,7 @@ async def create_resume(
         logger.error(f"Error creating resume for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Error creating resume")
 
-@router.get("", response_model=ResumeListResponse)
+@router.get("", response_model=ResumeListResponse, dependencies=[Depends(rate_limit_user(300, 60))])
 async def get_user_resumes(
     limit: int = 50, 
     offset: int = 0,
@@ -71,7 +72,7 @@ async def get_user_resumes(
         logger.error(f"Error fetching resumes for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching resumes")
 
-@router.get("/my-resume", response_model=ResumeResponse)
+@router.get("/my-resume", response_model=ResumeResponse, dependencies=[Depends(rate_limit_user(300, 60))])
 async def get_my_resume(
     current_user: User = Depends(get_current_user)
 ):
@@ -141,7 +142,7 @@ async def get_resume(
 
 @router.put("/my-resume", response_model=ResumeResponse)
 async def update_my_resume(
-    resume_data: dict,
+    resume_data: ResumeUpdateRequest,
     current_user: User = Depends(get_current_user)
 ):
     """Update the user's most recent resume."""
@@ -154,7 +155,7 @@ async def update_my_resume(
         updated_resume = await ResumeService.update_resume(
             resume_id=str(resume.id),
             user_id=str(current_user.id),
-            updates=resume_data
+            updates=resume_data.dict(exclude_unset=True)
         )
         
         return ResumeResponse(
@@ -183,7 +184,7 @@ async def update_my_resume(
 @router.put("/{resume_id}", response_model=SuccessResponse)
 async def update_resume(
     resume_id: str,
-    updates: dict,
+    updates: ResumeUpdateRequest,
     current_user: User = Depends(get_current_user)
 ):
     """Update a resume."""
@@ -191,7 +192,7 @@ async def update_resume(
         resume = await ResumeService.update_resume(
             resume_id=resume_id,
             user_id=str(current_user.id),
-            updates=updates
+            updates=updates.dict(exclude_unset=True)
         )
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
@@ -287,7 +288,7 @@ async def restore_resume_version(
 # AI-powered routes
 ai_router = APIRouter(prefix="/ai", tags=["ai"])
 
-@ai_router.post("/parse-and-save-resume", response_model=ResumeResponse)
+@ai_router.post("/parse-and-save-resume", response_model=ResumeResponse, dependencies=[Depends(rate_limit_user(30, 60))])
 async def parse_and_save_resume(
     file: UploadFile = File(...), 
     current_user: User = Depends(get_current_user)
@@ -299,6 +300,13 @@ async def parse_and_save_resume(
 
     try:
         file_content = await file.read()
+        # Server-side file validation
+        filename_lower = (file.filename or '').lower()
+        if not (filename_lower.endswith('.pdf') or filename_lower.endswith('.docx') or filename_lower.endswith('.txt')):
+            raise HTTPException(status_code=400, detail="Unsupported file type. Use PDF, DOCX, or TXT.")
+        if len(file_content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Max size is 10MB.")
+
         resume_text = file_parser.parse_file(file.filename, file_content)
         
         if not resume_text:
@@ -340,19 +348,20 @@ async def parse_and_save_resume(
         raise HTTPException(status_code=500, detail="Error parsing resume")
 
 
-@ai_router.post("/optimize-resume")
+@ai_router.post("/optimize-resume", response_model=ResumeResponse, dependencies=[Depends(rate_limit_user(60, 60))])
 async def optimize_resume(request: OptimizeResumeRequest):
     """Optimize resume for specific job description using AI."""
     try:
         optimized_resume = await openai_service.optimize_resume_for_job(
             request.resume, request.job_description
         )
+        # Map raw dict into response model fields (pass-through for now)
         return optimized_resume
     except Exception as e:
         logger.error(f"Error optimizing resume: {e}")
         raise HTTPException(status_code=500, detail="Error optimizing resume")
 
-@ai_router.post("/generate-resume")
+@ai_router.post("/generate-resume", response_model=ResumeResponse, dependencies=[Depends(rate_limit_user(60, 60))])
 async def generate_resume(request: GenerateResumeRequest):
     """Generate resume from job description and user background using AI."""
     try:
@@ -364,7 +373,7 @@ async def generate_resume(request: GenerateResumeRequest):
         logger.error(f"Error generating resume: {e}")
         raise HTTPException(status_code=500, detail="Error generating resume")
 
-@ai_router.post("/generate-cover-letter")
+@ai_router.post("/generate-cover-letter", dependencies=[Depends(rate_limit_user(60, 60))])
 async def generate_cover_letter(request: GenerateCoverLetterRequest):
     """Generate a cover letter based on resume and job description."""
     try:

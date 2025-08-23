@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useOnboarding, OnboardingStep } from '../hooks/useOnboarding';
+import type { OnboardingStep } from '../hooks/useOnboarding';
 
 interface OnboardingOverlayProps {
   isActive: boolean;
@@ -147,7 +147,7 @@ export const OnboardingOverlay: React.FC<OnboardingOverlayProps> = ({
         <div className="absolute w-3 h-3 bg-white border border-gray-200 transform rotate-45" />
       </div>
 
-      <style jsx>{`
+      <style>{`
         .onboarding-highlight {
           position: relative;
           z-index: 51;

@@ -3,6 +3,7 @@ Authentication routes for the Resume Builder API.
 """
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import RedirectResponse
+from fastapi import Response, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from typing import Optional
@@ -13,6 +14,7 @@ from google.auth.transport import requests as google_requests
 import httpx
 
 from core.config import settings
+from utils.rate_limiter import rate_limit_ip
 from schemas.requests import UserSignupRequest, UserLoginRequest, PasswordResetRequest, PasswordResetConfirm
 from schemas.responses import AuthResponse, UserResponse, SuccessResponse
 from database import User
@@ -49,7 +51,7 @@ def verify_token(token: str) -> Optional[TokenData]:
     except jwt.PyJWTError:
         return None
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)) -> User:
     """Get current authenticated user."""
     credentials_exception = HTTPException(
         status_code=401,
@@ -64,11 +66,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     user = await UserService.get_user_by_email(token_data.email)
     if user is None:
         raise credentials_exception
+    # Attach user id for downstream dependencies (e.g., rate limiting)
+    try:
+        request.state.user_id = str(user.id)
+    except Exception:
+        pass
         
     return user
 
-@router.post("/signup", response_model=AuthResponse)
-async def signup(user_data: UserSignupRequest):
+@router.post("/signup", response_model=AuthResponse, dependencies=[Depends(rate_limit_ip(10, 60))])
+async def signup(user_data: UserSignupRequest, response: Response):
     """Register a new user."""
     logger.info(f"Signup request received for user: {user_data.email}")
     
@@ -97,11 +104,24 @@ async def signup(user_data: UserSignupRequest):
         
         logger.info(f"User {user.email} signed up successfully")
         
-        return AuthResponse(
-            access_token=access_token,
-            token_type="bearer",
-            user=user_response
+        # Issue a long-lived refresh token as httpOnly cookie
+        refresh_expire = datetime.utcnow() + timedelta(days=7)
+        refresh_token = jwt.encode(
+            {"sub": user.email, "type": "refresh", "exp": refresh_expire},
+            settings.secret_key,
+            algorithm=settings.algorithm,
         )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.debug,
+            samesite="strict",
+            max_age=7 * 24 * 3600,
+            path="/auth",
+        )
+
+        return AuthResponse(access_token=access_token, token_type="bearer", user=user_response)
         
     except ValueError as e:
         logger.error(f"Validation error during signup for {user_data.email}: {e}")
@@ -110,8 +130,8 @@ async def signup(user_data: UserSignupRequest):
         logger.error(f"Error signing up user {user_data.email}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/login", response_model=AuthResponse)
-async def login(login_data: UserLoginRequest):
+@router.post("/login", response_model=AuthResponse, dependencies=[Depends(rate_limit_ip(20, 60))])
+async def login(login_data: UserLoginRequest, response: Response):
     """Authenticate user and return access token."""
     logger.info(f"Login request received for user: {login_data.email}")
     
@@ -146,11 +166,24 @@ async def login(login_data: UserLoginRequest):
         
         logger.info(f"User {user.email} logged in successfully")
         
-        return AuthResponse(
-            access_token=access_token,
-            token_type="bearer",
-            user=user_response
+        # Set refresh token cookie
+        refresh_expire = datetime.utcnow() + timedelta(days=7)
+        refresh_token = jwt.encode(
+            {"sub": user.email, "type": "refresh", "exp": refresh_expire},
+            settings.secret_key,
+            algorithm=settings.algorithm,
         )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.debug,
+            samesite="strict",
+            max_age=7 * 24 * 3600,
+            path="/auth",
+        )
+
+        return AuthResponse(access_token=access_token, token_type="bearer", user=user_response)
         
     except HTTPException:
         raise
@@ -171,9 +204,11 @@ async def get_me(current_user: User = Depends(get_current_user)):
     )
 
 @router.post("/logout", response_model=SuccessResponse)
-async def logout(current_user: User = Depends(get_current_user)):
+async def logout(response: Response, current_user: User = Depends(get_current_user)):
     """Logout user (placeholder for token blacklisting)."""
     logger.info(f"User {current_user.email} logged out")
+    # Clear refresh cookie
+    response.delete_cookie("refresh_token", path="/auth")
     return SuccessResponse(message="Successfully logged out")
 
 @router.post("/reset-password", response_model=SuccessResponse)
@@ -242,31 +277,52 @@ async def confirm_password_reset(reset_confirm: PasswordResetConfirm):
         logger.error(f"Error during password reset confirmation: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/refresh-token", response_model=AuthResponse)
-async def refresh_token(current_user: User = Depends(get_current_user)):
-    """Refresh access token."""
-    logger.info(f"Token refresh request for user: {current_user.email}")
-    
-    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
-    access_token = create_access_token(
-        data={"sub": current_user.email}, 
-        expires_delta=access_token_expires
-    )
-    
-    user_response = UserResponse(
-        id=str(current_user.id),
-        email=current_user.email,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name,
-        created_at=current_user.created_at,
-        is_active=current_user.is_active
-    )
-    
-    return AuthResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user=user_response
-    )
+@router.post("/refresh-token", response_model=AuthResponse, dependencies=[Depends(rate_limit_ip(60, 60))])
+async def refresh_token(response: Response, refresh_token: str | None = Cookie(default=None, alias="refresh_token")):
+    """Refresh access token using httpOnly refresh cookie."""
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="No refresh token provided")
+    try:
+        payload = jwt.decode(refresh_token, settings.secret_key, algorithms=[settings.algorithm])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=400, detail="Invalid token type")
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=400, detail="Invalid refresh token")
+        user = await UserService.get_user_by_email(email)
+        if not user or not user.is_active:
+            raise HTTPException(status_code=401, detail="User not found or inactive")
+        access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+        access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+        user_response = UserResponse(
+            id=str(user.id),
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            created_at=user.created_at,
+            is_active=user.is_active,
+        )
+        # Optionally rotate refresh token
+        new_refresh_expire = datetime.utcnow() + timedelta(days=7)
+        new_refresh_token = jwt.encode(
+            {"sub": user.email, "type": "refresh", "exp": new_refresh_expire},
+            settings.secret_key,
+            algorithm=settings.algorithm,
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=new_refresh_token,
+            httponly=True,
+            secure=not settings.debug,
+            samesite="strict",
+            max_age=7 * 24 * 3600,
+            path="/auth",
+        )
+        return AuthResponse(access_token=access_token, token_type="bearer", user=user_response)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 @router.post("/google/login")
 async def google_login(token_data: dict):

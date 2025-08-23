@@ -24,6 +24,16 @@ const Login: React.FC = () => {
     };
   }, [clearError]);
 
+  useEffect(() => {
+    // Clear ephemeral session message after showing it once
+    if (typeof window !== 'undefined' && sessionStorage.getItem('auth_message')) {
+      const timer = setTimeout(() => {
+        try { sessionStorage.removeItem('auth_message'); } catch {}
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -77,6 +87,13 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
+
+        {/* Session Expired Notice */}
+        {typeof window !== 'undefined' && sessionStorage.getItem('auth_message') && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+            {sessionStorage.getItem('auth_message')}
+          </div>
+        )}
 
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

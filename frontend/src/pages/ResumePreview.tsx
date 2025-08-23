@@ -180,7 +180,7 @@ const ResumePreview: React.FC = () => {
                 <div class="skill-category">
                   <h4>${category}</h4>
                   ${skills.map((skill) => `
-                    <span class="skill-item">${skill.toString()}${skill.level !== 'intermediate' ? ` (${skill.level})` : ''}</span>
+                    <span class="skill-item">${typeof skill === 'string' ? skill : (skill.name || '')}${(typeof skill !== 'string' && skill.level && skill.level !== 'intermediate') ? ` (${skill.level})` : ''}</span>
                   `).join('')}
                 </div>
               `).join('');
@@ -222,12 +222,12 @@ const ResumePreview: React.FC = () => {
       </html>
     `;
 
-    // Create blob and download
-    const blob = new Blob([htmlContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    // Create blob and download (export as HTML file for compatibility)
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${resumeToDisplay.personal_info?.full_name?.replace(/\s+/g, '_') || 'resume'}_resume.doc`;
+    link.download = `${resumeToDisplay.personal_info?.full_name?.replace(/\s+/g, '_') || 'resume'}_resume.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -302,7 +302,7 @@ const ResumePreview: React.FC = () => {
           onClick={handleExportDoc}
           className="flex items-center bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600"
         >
-          <FiFile className="mr-2" /> Export as DOC
+          <FiFile className="mr-2" /> Export as HTML
         </button>
         <button
           onClick={handleExportJson}

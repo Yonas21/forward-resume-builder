@@ -18,7 +18,7 @@ export const useAutoSave = (debounceMs: number = 2000) => {
     saveError: null,
   });
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastResumeRef = useRef(JSON.stringify(resume));
 
   const saveResume = async () => {
@@ -53,7 +53,7 @@ export const useAutoSave = (debounceMs: number = 2000) => {
       setState(prev => ({ ...prev, hasUnsavedChanges: true }));
 
       // Clear existing timeout
-      if (saveTimeoutRef.current) {
+      if (saveTimeoutRef.current !== null) {
         clearTimeout(saveTimeoutRef.current);
       }
 
@@ -64,7 +64,7 @@ export const useAutoSave = (debounceMs: number = 2000) => {
     }
 
     return () => {
-      if (saveTimeoutRef.current) {
+      if (saveTimeoutRef.current !== null) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
@@ -84,7 +84,7 @@ export const useAutoSave = (debounceMs: number = 2000) => {
   }, [state.hasUnsavedChanges]);
 
   const forceSave = () => {
-    if (saveTimeoutRef.current) {
+    if (saveTimeoutRef.current !== null) {
       clearTimeout(saveTimeoutRef.current);
     }
     return saveResume();

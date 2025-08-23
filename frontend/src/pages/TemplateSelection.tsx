@@ -23,6 +23,22 @@ const TemplateSelection: React.FC = () => {
   // Upload states
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+  const allowedExtensions = ['.pdf', '.docx', '.txt'];
+
+  const validateFile = (file: File): boolean => {
+    const nameLower = file.name.toLowerCase();
+    const hasAllowedExt = allowedExtensions.some((ext) => nameLower.endsWith(ext));
+    if (!hasAllowedExt) {
+      toast.error('Unsupported file type. Use PDF, DOCX, or TXT.');
+      return false;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error('File too large. Max size is 10MB.');
+      return false;
+    }
+    return true;
+  };
   
   // AI Generation states
   const [jobDescription, setJobDescription] = useState<JobDescription>({
@@ -117,14 +133,14 @@ const TemplateSelection: React.FC = () => {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
+      if (validateFile(file)) setSelectedFile(file);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setSelectedFile(file);
+      if (validateFile(file)) setSelectedFile(file);
     }
   };
 
@@ -397,13 +413,13 @@ const TemplateSelection: React.FC = () => {
                             <input
                               type="file"
                               className="hidden"
-                              accept=".pdf,.docx,.doc"
+                              accept=".pdf,.docx,.txt"
                               onChange={handleFileChange}
                             />
                           </label>
                         </p>
                         <p className="text-sm text-gray-500">
-                          Supports PDF, DOC, DOCX files up to 10MB
+                          Supports PDF, DOCX, TXT files up to 10MB
                         </p>
                       </div>
                     </div>

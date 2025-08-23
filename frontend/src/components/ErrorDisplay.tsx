@@ -1,5 +1,5 @@
 import React from 'react';
-import { ErrorInfo } from '../hooks/useErrorHandler';
+import type { ErrorInfo } from '../hooks/useErrorHandler';
 
 interface ErrorDisplayProps {
   errors: ErrorInfo[];

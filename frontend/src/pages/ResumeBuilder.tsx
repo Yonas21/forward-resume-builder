@@ -34,7 +34,7 @@ const ResumeBuilder: React.FC = () => {
   } = useResumeStore();
 
   // Initialize hooks
-  const autoSave = useAutoSave();
+  useAutoSave();
   const onboarding = useOnboarding();
   const errorHandler = useErrorHandler();
 
@@ -157,10 +157,7 @@ const ResumeBuilder: React.FC = () => {
     });
   };
 
-  // Ensure focus outlines are visible for keyboard users
-  useEffect(() => {
-    document.body.classList.add('focus:outline-none');
-  }, []);
+  // Keep default focus outlines for accessibility (do not disable)
 
   if (!resume) {
     return (

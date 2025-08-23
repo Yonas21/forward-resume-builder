@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import Navbar from './components/Navbar';
 import { ToastProvider } from './components/ToastProvider';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Home from './pages/Home';
 import ResumeBuilder from './pages/ResumeBuilder';
 import ResumePreview from './pages/ResumePreview';
@@ -18,8 +18,11 @@ import PasswordReset from './components/PasswordReset';
 import CoverLetter from './pages/CoverLetter';
 
 function App() {
-  const [highContrast, setHighContrast] = useState(false);
+  const [highContrast, setHighContrast] = useState<boolean>(() => localStorage.getItem('highContrast') === 'true');
   const themeClass = useMemo(() => (highContrast ? 'hc' : ''), [highContrast]);
+  useEffect(() => {
+    localStorage.setItem('highContrast', highContrast ? 'true' : 'false');
+  }, [highContrast]);
   return (
     
       <Router>
