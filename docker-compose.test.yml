@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # Test database
+  test-mongodb:
+    image: mongo:7.0
+    container_name: test-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: test_resume_builder
+    ports:
+      - "27018:27017"
+    networks:
+      - test-network
+
+  # Test Redis
+  test-redis:
+    image: redis:7.2-alpine
+    container_name: test-redis
+    command: redis-server --requirepass redis123
+    ports:
+      - "6380:6379"
+    networks:
+      - test-network
+
+  # Backend tests
+  backend-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: backend-tests
+    environment:
+      MONGODB_URL: mongodb://admin:password123@test-mongodb:27017/test_resume_builder?authSource=admin
+      REDIS_URL: redis://:redis123@test-redis:6379/0
+      SECRET_KEY: test-secret-key
+      OPENAI_API_KEY: test-key
+      ENVIRONMENT: testing
+    depends_on:
+      - test-mongodb
+      - test-redis
+    volumes:
+      - ./backend:/app
+      - ./test-results:/app/test-results
+    networks:
+      - test-network
+    command: ["pytest", "--cov=.", "--cov-report=xml", "--cov-report=html", "--junit-xml=test-results/backend-results.xml", "tests/"]
+
+  # Frontend tests
+  frontend-tests:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    container_name: frontend-tests
+    environment:
+      NODE_ENV: test
+      VITE_API_BASE_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - ./test-results:/app/test-results
+    networks:
+      - test-network
+    command: ["npm", "test", "--", "--coverage", "--watchAll=false", "--testResultsProcessor=jest-junit", "--outputFile=test-results/frontend-results.xml"]
+
+  # Integration tests
+  integration-tests:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile
+    container_name: integration-tests
+    environment:
+      BACKEND_URL: http://backend:8000
+      FRONTEND_URL: http://frontend
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./test-results:/app/test-results
+    networks:
+      - test-network
+      - resume-builder-network
+    command: ["pytest", "--junit-xml=test-results/integration-results.xml", "integration/"]
+
+networks:
+  test-network:
+    driver: bridge
+  resume-builder-network:
+    external: true
