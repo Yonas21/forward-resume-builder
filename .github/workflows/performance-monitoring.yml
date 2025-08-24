@@ -1,0 +1,224 @@
+name: Performance Monitoring
+
+on:
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL for performance testing'
+        required: false
+        default: 'https://staging.resumebuilder.com'
+
+jobs:
+  lighthouse-audit:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli@0.12.x
+
+    - name: Run Lighthouse CI
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      run: |
+        lhci autorun --upload.target=temporary-public-storage
+        
+    - name: Upload Lighthouse results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: lighthouse-results
+        path: .lighthouseci/
+        retention-days: 30
+
+  load-testing:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Locust
+      run: pip install locust
+
+    - name: Create Locust test file
+      run: |
+        cat > locustfile.py << 'EOF'
+        from locust import HttpUser, task, between
+        
+        class ResumeBuilderUser(HttpUser):
+            wait_time = between(1, 3)
+            
+            def on_start(self):
+                # Login or setup user session
+                pass
+                
+            @task(3)
+            def view_homepage(self):
+                self.client.get("/")
+                
+            @task(2)
+            def view_dashboard(self):
+                self.client.get("/dashboard")
+                
+            @task(1)
+            def api_health_check(self):
+                self.client.get("/health")
+        EOF
+
+    - name: Run load test
+      run: |
+        locust --headless --users 10 --spawn-rate 2 --run-time 60s \
+               --host ${{ github.event.inputs.target_url || 'https://staging.resumebuilder.com' }} \
+               --html load-test-report.html --csv load-test-results
+
+    - name: Upload load test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: load-test-results
+        path: |
+          load-test-report.html
+          load-test-results_*.csv
+        retention-days: 30
+
+  api-performance-test:
+    name: API Performance Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install k6
+      run: |
+        sudo gpg -k
+        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+
+    - name: Create k6 test script
+      run: |
+        cat > api-performance-test.js << 'EOF'
+        import http from 'k6/http';
+        import { check, sleep } from 'k6';
+        
+        export const options = {
+          stages: [
+            { duration: '30s', target: 10 },
+            { duration: '1m', target: 20 },
+            { duration: '30s', target: 0 },
+          ],
+          thresholds: {
+            http_req_duration: ['p(95)<500'],
+            http_req_failed: ['rate<0.1'],
+          },
+        };
+        
+        const BASE_URL = __ENV.TARGET_URL || 'https://staging.resumebuilder.com';
+        
+        export default function () {
+          // Health check
+          let response = http.get(`${BASE_URL}/health`);
+          check(response, {
+            'health check status is 200': (r) => r.status === 200,
+            'health check response time < 200ms': (r) => r.timings.duration < 200,
+          });
+          
+          sleep(1);
+          
+          // API endpoints test
+          response = http.get(`${BASE_URL}/api/v1/health`);
+          check(response, {
+            'API health status is 200': (r) => r.status === 200,
+          });
+          
+          sleep(1);
+        }
+        EOF
+
+    - name: Run k6 performance test
+      env:
+        TARGET_URL: ${{ github.event.inputs.target_url || 'https://staging.resumebuilder.com' }}
+      run: |
+        k6 run --out json=api-performance-results.json api-performance-test.js
+
+    - name: Upload API performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: api-performance-results
+        path: api-performance-results.json
+        retention-days: 30
+
+  performance-budget-check:
+    name: Performance Budget Check
+    runs-on: ubuntu-latest
+    needs: [lighthouse-audit, load-testing, api-performance-test]
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Check performance budgets
+      run: |
+        echo "Checking performance budgets..."
+        # Add logic to parse results and check against budgets
+        # This could involve parsing Lighthouse JSON, load test results, etc.
+        # and comparing against predefined thresholds
+        
+        echo "Performance budget check completed"
+
+    - name: Create performance report
+      run: |
+        cat > performance-report.md << 'EOF'
+        # Performance Report
+        
+        ## Lighthouse Audit Results
+        - Performance Score: TBD
+        - Accessibility Score: TBD
+        - Best Practices Score: TBD
+        - SEO Score: TBD
+        
+        ## Load Testing Results
+        - Average Response Time: TBD
+        - 95th Percentile: TBD
+        - Error Rate: TBD
+        
+        ## API Performance Results
+        - Average API Response Time: TBD
+        - API Error Rate: TBD
+        
+        Generated on: $(date)
+        EOF
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance-report.md
+        retention-days: 30

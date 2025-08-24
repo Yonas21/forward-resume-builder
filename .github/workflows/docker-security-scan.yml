@@ -1,0 +1,236 @@
+name: Docker Security Scan
+
+on:
+  schedule:
+    # Run security scans daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/Dockerfile*'
+      - 'docker-compose*.yml'
+
+jobs:
+  hadolint:
+    name: Dockerfile Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Hadolint on Backend Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: backend/Dockerfile
+        format: sarif
+        output-file: backend-hadolint-results.sarif
+
+    - name: Run Hadolint on Frontend Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: frontend/Dockerfile
+        format: sarif
+        output-file: frontend-hadolint-results.sarif
+
+    - name: Upload Hadolint results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: |
+          backend-hadolint-results.sarif
+          frontend-hadolint-results.sarif
+
+  docker-scout:
+    name: Docker Scout Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build backend image for scanning
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        tags: resume-builder-backend:scan
+        load: true
+
+    - name: Build frontend image for scanning
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        tags: resume-builder-frontend:scan
+        load: true
+
+    - name: Docker Scout scan backend
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: resume-builder-backend:scan
+        format: sarif
+        output: backend-scout-results.sarif
+
+    - name: Docker Scout scan frontend
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: resume-builder-frontend:scan
+        format: sarif
+        output: frontend-scout-results.sarif
+
+    - name: Upload Docker Scout results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: |
+          backend-scout-results.sarif
+          frontend-scout-results.sarif
+
+  trivy-scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build backend image
+      run: |
+        docker build -t resume-builder-backend:latest backend/
+
+    - name: Build frontend image
+      run: |
+        docker build -t resume-builder-frontend:latest frontend/
+
+    - name: Run Trivy vulnerability scanner on backend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'resume-builder-backend:latest'
+        format: 'sarif'
+        output: 'backend-trivy-results.sarif'
+
+    - name: Run Trivy vulnerability scanner on frontend
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'resume-builder-frontend:latest'
+        format: 'sarif'
+        output: 'frontend-trivy-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: |
+          backend-trivy-results.sarif
+          frontend-trivy-results.sarif
+
+  grype-scan:
+    name: Grype Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build backend image
+      run: |
+        docker build -t resume-builder-backend:latest backend/
+
+    - name: Build frontend image
+      run: |
+        docker build -t resume-builder-frontend:latest frontend/
+
+    - name: Run Grype vulnerability scanner on backend
+      uses: anchore/scan-action@v3
+      id: backend-scan
+      with:
+        image: "resume-builder-backend:latest"
+        format: sarif
+        output-file: backend-grype-results.sarif
+
+    - name: Run Grype vulnerability scanner on frontend
+      uses: anchore/scan-action@v3
+      id: frontend-scan
+      with:
+        image: "resume-builder-frontend:latest"
+        format: sarif
+        output-file: frontend-grype-results.sarif
+
+    - name: Upload Grype scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: |
+          backend-grype-results.sarif
+          frontend-grype-results.sarif
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [hadolint, docker-scout, trivy-scan, grype-scan]
+    if: always()
+    
+    steps:
+    - name: Create security summary
+      run: |
+        cat > security-summary.md << 'EOF'
+        # Docker Security Scan Summary
+        
+        ## Scan Results
+        
+        ### Hadolint (Dockerfile Linting)
+        - Status: ${{ needs.hadolint.result }}
+        
+        ### Docker Scout
+        - Status: ${{ needs.docker-scout.result }}
+        
+        ### Trivy Vulnerability Scanner
+        - Status: ${{ needs.trivy-scan.result }}
+        
+        ### Grype Vulnerability Scanner
+        - Status: ${{ needs.grype-scan.result }}
+        
+        ## Recommendations
+        
+        1. Review all identified vulnerabilities
+        2. Update base images to latest versions
+        3. Remove unnecessary packages and dependencies
+        4. Follow Docker security best practices
+        
+        Generated on: $(date)
+        EOF
+
+    - name: Upload security summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-summary
+        path: security-summary.md
+        retention-days: 30
+
+    - name: Post security summary to PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('security-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
