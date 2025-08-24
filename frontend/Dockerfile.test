@@ -1,0 +1,26 @@
+# Test Dockerfile for React frontend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies for native modules
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies including test dependencies
+RUN npm ci
+
+# Create test results directory
+RUN mkdir -p test-results
+
+# Copy source code
+COPY . .
+
+# Run tests by default
+CMD ["npm", "test", "--", "--coverage", "--watchAll=false"]
