@@ -33,6 +33,11 @@ import { useResumeHistory } from '../hooks/useUndoRedo';
 import { OnboardingOverlay, OnboardingTrigger } from '../components/OnboardingOverlay';
 import { AutoSaveStatusBar } from '../components/AutoSaveIndicator';
 import { LoadingProgress } from '../components/ProgressIndicator';
+import { useContextualHelp } from '../hooks/useContextualHelp';
+import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
+import { ContextualHelpTooltip, HelpTrigger } from '../components/ContextualHelpTooltip';
+import { SmartSuggestions, SuggestionChips } from '../components/SmartSuggestions';
+import { SampleContentPanel, QuickSampleSelector } from '../components/SampleContentPanel';
 
 const ResumeBuilder: React.FC = () => {
   const {
@@ -47,6 +52,18 @@ const ResumeBuilder: React.FC = () => {
   const errorHandler = useErrorHandler();
   const keyboardHelp = useKeyboardShortcutsHelp();
   const undoRedo = useResumeHistory(resume);
+  const contextualHelp = useContextualHelp({
+    enabled: true,
+    autoShow: true,
+    delayMs: 3000,
+    maxTipsPerSession: 5
+  });
+  const smartSuggestions = useSmartSuggestions({
+    enabled: true,
+    autoSuggest: true,
+    maxSuggestions: 10,
+    minRelevance: 30
+  });
   
   // Initialize keyboard shortcuts
   useKeyboardShortcuts({
@@ -275,6 +292,16 @@ const ResumeBuilder: React.FC = () => {
         title="Please wait"
       />
 
+      {/* Contextual help tooltip */}
+      <ContextualHelpTooltip
+        tip={contextualHelp.activeTip}
+        isVisible={contextualHelp.isVisible}
+        position={contextualHelp.position}
+        onClose={contextualHelp.hideTip}
+        showProgress={true}
+        allowSkip={true}
+      />
+
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           <div className="lg:col-span-1 space-y-4 md:space-y-6 order-2 lg:order-1">
@@ -290,8 +317,8 @@ const ResumeBuilder: React.FC = () => {
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               sensors={sensors}
-              onStartOnboarding={onboarding.startOnboarding}
-              hasCompletedOnboarding={onboarding.hasCompletedOnboarding}
+              onStartOnboarding={onboarding.start}
+              hasCompletedOnboarding={onboarding.hasCompleted}
             />
             
             <AdvancedFormatting
@@ -329,6 +356,25 @@ const ResumeBuilder: React.FC = () => {
             setShowGrid={setShowGrid}
             renderTemplatePreview={renderTemplatePreview}
             font={font}
+            activeSection={activeSection}
+            onApplySample={(content) => {
+              // Apply sample content to the current section
+              console.log('Applying sample content:', content);
+            }}
+            suggestions={smartSuggestions.currentSuggestions}
+            onSelectSuggestion={smartSuggestions.selectSuggestion}
+            onApplySuggestions={(suggestions) => {
+              // Apply selected suggestions
+              console.log('Applying suggestions:', suggestions);
+            }}
+            selectedSuggestions={smartSuggestions.selectedSuggestions}
+            onShowHelp={() => {
+              // Show contextual help for current section
+              contextualHelp.autoShowTip({
+                section: activeSection,
+                field: activeSection
+              });
+            }}
           />
         </div>
 
