@@ -4,14 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { templates } from '../TemplateConfig';
 import { ActionButtons } from './ActionButtons';
 import { CompactCompletionIndicator } from '../ResumeCompletionIndicator';
+import { OnboardingTrigger } from '../OnboardingOverlay';
 
 interface HeaderProps {
   selectedTemplate: string;
   font: string;
   color: string;
+  onStartOnboarding?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color }) => {
+export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color, onStartOnboarding }) => {
   const navigate = useNavigate();
 
   const handlePreview = () => {
@@ -47,6 +49,9 @@ export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color })
                   Using {templates.find((t) => t.id === selectedTemplate)?.name} template
                 </p>
                 <CompactCompletionIndicator />
+                {onStartOnboarding && (
+                  <OnboardingTrigger onStart={onStartOnboarding} />
+                )}
               </div>
             </div>
           </div>
