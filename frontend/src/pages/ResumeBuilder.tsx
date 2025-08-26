@@ -18,10 +18,8 @@ import { Header } from '../components/builder/Header';
 import { MainContent } from '../components/builder/MainContent';
 import { useAiSummary } from '../hooks/useAiSummary';
 import { useAutoSave } from '../hooks/useAutoSave';
-import { useOnboarding } from '../hooks/useOnboarding';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { AutoSaveIndicator } from '../components/AutoSaveIndicator';
-import { OnboardingOverlay } from '../components/OnboardingOverlay';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { ResumeScoring } from '../components/ResumeScoring';
 import { AdvancedFormatting } from '../components/builder/AdvancedFormatting';
@@ -30,6 +28,11 @@ import { useKeyboardShortcuts, RESUME_BUILDER_SHORTCUTS, useCustomEvent } from '
 import { useMobileOptimization } from '../hooks/useMobileOptimization';
 import { CompactCompletionIndicator } from '../components/ResumeCompletionIndicator';
 import { KeyboardShortcutsHelp, useKeyboardShortcutsHelp } from '../components/KeyboardShortcutsHelp';
+import { useOnboarding } from '../hooks/useOnboarding';
+import { useResumeHistory } from '../hooks/useUndoRedo';
+import { OnboardingOverlay, OnboardingTrigger } from '../components/OnboardingOverlay';
+import { AutoSaveStatusBar } from '../components/AutoSaveIndicator';
+import { LoadingProgress } from '../components/ProgressIndicator';
 
 const ResumeBuilder: React.FC = () => {
   const {
@@ -43,6 +46,7 @@ const ResumeBuilder: React.FC = () => {
   const onboarding = useOnboarding();
   const errorHandler = useErrorHandler();
   const keyboardHelp = useKeyboardShortcutsHelp();
+  const undoRedo = useResumeHistory(resume);
   
   // Initialize keyboard shortcuts
   useKeyboardShortcuts({
@@ -61,6 +65,22 @@ const ResumeBuilder: React.FC = () => {
   useCustomEvent('resume-save', () => {
     // Trigger save action
     console.log('Save triggered via keyboard shortcut');
+  });
+
+  useCustomEvent('resume-undo', () => {
+    const previousResume = undoRedo.undo();
+    if (previousResume) {
+      // Update the resume store with the previous state
+      console.log('Undo triggered via keyboard shortcut');
+    }
+  });
+
+  useCustomEvent('resume-redo', () => {
+    const nextResume = undoRedo.redo();
+    if (nextResume) {
+      // Update the resume store with the next state
+      console.log('Redo triggered via keyboard shortcut');
+    }
   });
 
   useCustomEvent('resume-navigate', (event) => {
@@ -204,7 +224,12 @@ const ResumeBuilder: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 resume-builder-container">
-      <Header selectedTemplate={selectedTemplate} font={font} color={color} />
+              <Header 
+          selectedTemplate={selectedTemplate} 
+          font={font} 
+          color={color} 
+          onStartOnboarding={onboarding.start}
+        />
 
       {/* Auto-save indicator and completion indicator */}
       <div className="fixed top-20 right-4 z-30 space-y-2">
@@ -222,19 +247,32 @@ const ResumeBuilder: React.FC = () => {
 
       {/* Onboarding overlay */}
       <OnboardingOverlay
-        isActive={onboarding.isOnboardingActive}
+        isActive={onboarding.isActive}
         currentStep={onboarding.currentStep}
-        onNext={onboarding.nextStep}
-        onPrevious={onboarding.previousStep}
-        onSkip={onboarding.skipOnboarding}
+        onNext={onboarding.next}
+        onPrevious={onboarding.previous}
+        onSkip={onboarding.skip}
         currentStepIndex={onboarding.currentStepIndex}
         totalSteps={onboarding.totalSteps}
+        showProgress={true}
+        allowSkip={true}
       />
 
       {/* Keyboard shortcuts help */}
       <KeyboardShortcutsHelp
         isOpen={keyboardHelp.isHelpOpen}
         onClose={keyboardHelp.closeHelp}
+      />
+
+      {/* Auto-save status bar */}
+      <AutoSaveStatusBar />
+
+      {/* Loading progress for long operations */}
+      <LoadingProgress
+        isLoading={false} // Set to true when performing long operations
+        progress={0}
+        status="Processing..."
+        title="Please wait"
       />
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 md:py-8">
