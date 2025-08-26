@@ -19,15 +19,35 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
     lastSaved, 
     hasUnsavedChanges, 
     saveError, 
-    saveProgress,
-    saveCount,
-    getSaveStatus,
-    getSaveStatusText,
-    forceSave,
-    clearError
+    forceSave
   } = useAutoSave();
 
-  const status = getSaveStatus();
+  // Determine status based on available state
+  const getStatus = () => {
+    if (isSaving) return 'saving';
+    if (saveError) return 'error';
+    if (hasUnsavedChanges) return 'unsaved';
+    if (lastSaved) return 'saved';
+    return 'idle';
+  };
+
+  const getSaveStatusText = () => {
+    const status = getStatus();
+    switch (status) {
+      case 'saving':
+        return 'Saving...';
+      case 'error':
+        return 'Save failed';
+      case 'unsaved':
+        return 'Unsaved changes';
+      case 'saved':
+        return 'All changes saved';
+      default:
+        return 'Ready';
+    }
+  };
+
+  const status = getStatus();
 
   const getStatusColor = () => {
     switch (status) {
@@ -81,7 +101,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
       <div className={`flex items-center space-x-2 text-sm ${className}`}>
         <span className={getStatusColor()}>{getStatusIcon()}</span>
         <span className={getStatusColor()}>
-          {status === 'saving' ? `${saveProgress}%` : status === 'saved' ? 'Saved' : 'Unsaved'}
+          {status === 'saving' ? 'Saving...' : status === 'saved' ? 'Saved' : 'Unsaved'}
         </span>
       </div>
     );
@@ -98,8 +118,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
             </p>
             {showDetails && (
               <p className="text-xs text-gray-500">
-                {saveCount > 0 ? `${saveCount} saves` : 'No saves yet'}
-                {lastSaved && ` • Last: ${lastSaved.toLocaleTimeString()}`}
+                {lastSaved ? `Last saved: ${lastSaved.toLocaleTimeString()}` : 'No saves yet'}
               </p>
             )}
           </div>
@@ -108,10 +127,10 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
         <div className="flex items-center space-x-2">
           {status === 'error' && (
             <button
-              onClick={clearError}
+              onClick={() => window.location.reload()}
               className="text-xs text-red-600 hover:text-red-800 underline"
             >
-              Dismiss
+              Retry
             </button>
           )}
           
@@ -129,10 +148,7 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
       {showProgress && isSaving && (
         <div className="mt-2">
           <div className="w-full bg-gray-200 rounded-full h-1">
-            <div
-              className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-              style={{ width: `${saveProgress}%` }}
-            />
+            <div className="bg-blue-600 h-1 rounded-full transition-all duration-300 animate-pulse" />
           </div>
         </div>
       )}
@@ -150,9 +166,17 @@ export const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
 export const FloatingAutoSaveIndicator: React.FC<{
   className?: string;
 }> = ({ className = '' }) => {
-  const { isSaving, hasUnsavedChanges, saveError, getSaveStatus } = useAutoSave();
+  const { isSaving, hasUnsavedChanges, saveError } = useAutoSave();
   
-  const status = getSaveStatus();
+  // Determine status based on available state
+  const getStatus = () => {
+    if (isSaving) return 'saving';
+    if (saveError) return 'error';
+    if (hasUnsavedChanges) return 'unsaved';
+    return 'idle';
+  };
+  
+  const status = getStatus();
   
   if (status === 'idle' || status === 'saved') return null;
 
@@ -199,14 +223,32 @@ export const AutoSaveStatusBar: React.FC<{
     isSaving, 
     hasUnsavedChanges, 
     saveError, 
-    saveProgress,
-    getSaveStatus,
-    getSaveStatusText,
-    forceSave,
-    clearError
+    forceSave
   } = useAutoSave();
 
-  const status = getSaveStatus();
+  // Determine status based on available state
+  const getStatus = () => {
+    if (isSaving) return 'saving';
+    if (saveError) return 'error';
+    if (hasUnsavedChanges) return 'unsaved';
+    return 'idle';
+  };
+
+  const getSaveStatusText = () => {
+    const status = getStatus();
+    switch (status) {
+      case 'saving':
+        return 'Saving...';
+      case 'error':
+        return 'Save failed';
+      case 'unsaved':
+        return 'Unsaved changes';
+      default:
+        return 'Ready';
+    }
+  };
+
+  const status = getStatus();
 
   if (status === 'idle') return null;
 
@@ -220,10 +262,7 @@ export const AutoSaveStatusBar: React.FC<{
           
           {isSaving && (
             <div className="w-32 bg-gray-200 rounded-full h-1">
-              <div
-                className="bg-blue-600 h-1 rounded-full transition-all duration-300"
-                style={{ width: `${saveProgress}%` }}
-              />
+              <div className="bg-blue-600 h-1 rounded-full transition-all duration-300 animate-pulse" />
             </div>
           )}
         </div>
@@ -231,10 +270,10 @@ export const AutoSaveStatusBar: React.FC<{
         <div className="flex items-center space-x-2">
           {saveError && (
             <button
-              onClick={clearError}
+              onClick={() => window.location.reload()}
               className="text-xs text-red-600 hover:text-red-800 underline"
             >
-              Dismiss
+              Retry
             </button>
           )}
           
