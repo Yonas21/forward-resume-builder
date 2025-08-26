@@ -97,12 +97,13 @@ const Signup: React.FC = () => {
       console.error('Signup failed:', err);
       // The error from the store is already set, but we can check for specific messages
       if (err.message.includes('already exists')) {
-        setValidationErrors({ email: 'An account with this email already exists' });
+        // Handle existing email error through the validation system
+        validation.validateSingleField('email', formData.email);
       }
     }
   };
 
-  const displayError = validationErrors.general || error;
+  const displayError = error;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -177,9 +178,13 @@ const Signup: React.FC = () => {
                   autoComplete="family-name"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  onBlur={() => handleInputBlur('lastName')}
+                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validation.getFieldError('lastName') ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Doe"
                 />
+                {validation.getFieldError('lastName') && (
+                  <p className="mt-1 text-xs text-red-600">{validation.getFieldError('lastName')}</p>
+                )}
               </div>
             </div>
 
@@ -187,20 +192,21 @@ const Signup: React.FC = () => {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email address *
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.email ? 'border-red-300' : 'border-gray-300'}`}
-                placeholder="john@example.com"
-              />
-              {validationErrors.email && (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.email}</p>
-              )}
+                              <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  onBlur={() => handleInputBlur('email')}
+                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validation.getFieldError('email') ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="john@example.com"
+                />
+                {validation.getFieldError('email') && (
+                  <p className="mt-1 text-xs text-red-600">{validation.getFieldError('email')}</p>
+                )}
             </div>
 
             <div>
@@ -216,7 +222,8 @@ const Signup: React.FC = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                  onBlur={() => handleInputBlur('password')}
+                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validation.getFieldError('password') ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Create a strong password"
                 />
                 <button
@@ -236,8 +243,8 @@ const Signup: React.FC = () => {
                   )}
                 </button>
               </div>
-              {validationErrors.password && (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.password}</p>
+              {validation.getFieldError('password') && (
+                <p className="mt-1 text-xs text-red-600">{validation.getFieldError('password')}</p>
               )}
               <p className="mt-1 text-xs text-gray-500">
                 Must be at least 8 characters with letters and numbers
@@ -257,7 +264,8 @@ const Signup: React.FC = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'}`}
+                  onBlur={() => handleInputBlur('confirmPassword')}
+                  className={`w-full px-3 py-3 pr-12 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validation.getFieldError('confirmPassword') ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Confirm your password"
                 />
                 <button
@@ -277,8 +285,8 @@ const Signup: React.FC = () => {
                   )}
                 </button>
               </div>
-              {validationErrors.confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">{validationErrors.confirmPassword}</p>
+              {validation.getFieldError('confirmPassword') && (
+                <p className="mt-1 text-xs text-red-600">{validation.getFieldError('confirmPassword')}</p>
               )}
             </div>
 
