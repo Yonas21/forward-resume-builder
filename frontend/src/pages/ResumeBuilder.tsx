@@ -25,6 +25,11 @@ import { OnboardingOverlay } from '../components/OnboardingOverlay';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { ResumeScoring } from '../components/ResumeScoring';
 import { AdvancedFormatting } from '../components/builder/AdvancedFormatting';
+import { LoadingOverlay } from '../components/LoadingSpinner';
+import { useKeyboardShortcuts, RESUME_BUILDER_SHORTCUTS, useCustomEvent } from '../hooks/useKeyboardShortcuts';
+import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { CompactCompletionIndicator } from '../components/ResumeCompletionIndicator';
+import { KeyboardShortcutsHelp, useKeyboardShortcutsHelp } from '../components/KeyboardShortcutsHelp';
 
 const ResumeBuilder: React.FC = () => {
   const {
@@ -37,6 +42,35 @@ const ResumeBuilder: React.FC = () => {
   useAutoSave();
   const onboarding = useOnboarding();
   const errorHandler = useErrorHandler();
+  const keyboardHelp = useKeyboardShortcutsHelp();
+  
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: RESUME_BUILDER_SHORTCUTS,
+    enabled: true
+  });
+
+  // Initialize mobile optimization
+  const mobileOpts = useMobileOptimization({
+    enableTouchGestures: true,
+    enableSwipeNavigation: true,
+    enableTouchFeedback: true
+  });
+
+  // Handle custom events from keyboard shortcuts
+  useCustomEvent('resume-save', () => {
+    // Trigger save action
+    console.log('Save triggered via keyboard shortcut');
+  });
+
+  useCustomEvent('resume-navigate', (event) => {
+    const section = event.detail;
+    setActiveSection(section);
+  });
+
+  useCustomEvent('show-keyboard-help', () => {
+    keyboardHelp.openHelp();
+  });
 
   useEffect(() => {
     fetchMyResume();
@@ -161,12 +195,10 @@ const ResumeBuilder: React.FC = () => {
 
   if (!resume) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your resume...</p>
-        </div>
-      </div>
+      <LoadingOverlay 
+        isVisible={true} 
+        text="Loading your resume..." 
+      />
     );
   }
 
@@ -174,9 +206,10 @@ const ResumeBuilder: React.FC = () => {
     <div className="min-h-screen bg-gray-50 resume-builder-container">
       <Header selectedTemplate={selectedTemplate} font={font} color={color} />
 
-      {/* Auto-save indicator */}
-      <div className="fixed top-20 right-4 z-30">
+      {/* Auto-save indicator and completion indicator */}
+      <div className="fixed top-20 right-4 z-30 space-y-2">
         <AutoSaveIndicator />
+        <CompactCompletionIndicator />
       </div>
 
       {/* Error display */}
@@ -196,6 +229,12 @@ const ResumeBuilder: React.FC = () => {
         onSkip={onboarding.skipOnboarding}
         currentStepIndex={onboarding.currentStepIndex}
         totalSteps={onboarding.totalSteps}
+      />
+
+      {/* Keyboard shortcuts help */}
+      <KeyboardShortcutsHelp
+        isOpen={keyboardHelp.isHelpOpen}
+        onClose={keyboardHelp.closeHelp}
       />
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 md:py-8">
