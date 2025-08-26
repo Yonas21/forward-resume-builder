@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { templates } from '../TemplateConfig';
 import { ActionButtons } from './ActionButtons';
+import { CompactCompletionIndicator } from '../ResumeCompletionIndicator';
 
 interface HeaderProps {
   selectedTemplate: string;
@@ -41,9 +42,12 @@ export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color })
             </button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Resume Builder</h1>
-              <p className="text-sm text-gray-600">
-                Using {templates.find((t) => t.id === selectedTemplate)?.name} template
-              </p>
+              <div className="flex items-center space-x-4">
+                <p className="text-sm text-gray-600">
+                  Using {templates.find((t) => t.id === selectedTemplate)?.name} template
+                </p>
+                <CompactCompletionIndicator />
+              </div>
             </div>
           </div>
           <ActionButtons onPreview={handlePreview} onExport={handleExport} />
