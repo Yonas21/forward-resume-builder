@@ -235,8 +235,8 @@ export const useResumeHistory = (resume: Resume | null) => {
   });
 
   useEffect(() => {
-    if (resume) {
-      if (undoRedo.state.history.length === 0) {
+    if (resume && undoRedo.history) {
+      if (undoRedo.history.length === 0) {
         undoRedo.initialize(resume);
       } else if (undoRedo.hasChanged(resume)) {
         undoRedo.trackChange(resume, 'Resume updated', 'edit');
