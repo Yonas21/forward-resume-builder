@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useFormValidation, VALIDATION_PATTERNS, VALIDATION_MESSAGES } from '../hooks/useFormValidation';
+import { LoadingButton } from './LoadingSpinner';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -12,9 +14,38 @@ const Signup: React.FC = () => {
     firstName: '',
     lastName: ''
   });
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Form validation
+  const validation = useFormValidation({
+    email: {
+      required: true,
+      pattern: VALIDATION_PATTERNS.email,
+      message: VALIDATION_MESSAGES.email
+    },
+    password: {
+      required: true,
+      pattern: VALIDATION_PATTERNS.password,
+      message: VALIDATION_MESSAGES.password
+    },
+    confirmPassword: {
+      required: true,
+      custom: (value) => value !== formData.password ? 'Passwords do not match' : null
+    },
+    firstName: {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      message: 'First name must be between 2 and 50 characters'
+    },
+    lastName: {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      message: 'Last name must be between 2 and 50 characters'
+    }
+  });
 
   useEffect(() => {
     // Clear any existing auth errors when the component mounts
@@ -26,46 +57,23 @@ const Signup: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear specific validation error when user starts typing
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
-    }
-    // Clear global auth error as well
+    
+    // Validate field in real-time
+    validation.validateSingleField(name, value);
+    
+    // Clear global auth error
     if (error) {
       clearError();
     }
   };
 
+  const handleInputBlur = (fieldName: string) => {
+    validation.setFieldTouched(fieldName);
+  };
+
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
-    } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one letter and one number';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
-
-    setValidationErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const errors = validation.validateForm(formData);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,11 +157,12 @@ const Signup: React.FC = () => {
                   required
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validationErrors.firstName ? 'border-red-300' : 'border-gray-300'}`}
+                  onBlur={() => handleInputBlur('firstName')}
+                  className={`w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${validation.getFieldError('firstName') ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="John"
                 />
-                {validationErrors.firstName && (
-                  <p className="mt-1 text-xs text-red-600">{validationErrors.firstName}</p>
+                {validation.getFieldError('firstName') && (
+                  <p className="mt-1 text-xs text-red-600">{validation.getFieldError('firstName')}</p>
                 )}
               </div>
 
@@ -289,20 +298,15 @@ const Signup: React.FC = () => {
               </label>
             </div>
 
-            <button
+            <LoadingButton
               type="submit"
-              disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Creating account..."
+              disabled={!validation.isFormValid()}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Creating account...
-                </div>
-              ) : (
-                'Create account'
-              )}
-            </button>
+              Create account
+            </LoadingButton>
           </div>
         </form>
 
