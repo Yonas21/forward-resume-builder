@@ -38,20 +38,40 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
         } catch {}
-        const token = get().token;
-        if (token) {
-          try {
-            set({ isAuthenticated: true, isLoading: true });
-            const currentUser = await authService.getCurrentUser();
-            set({ user: currentUser, isLoading: false });
-            // Fetch user's resume after successful authentication
-            useResumeStore.getState().fetchUserResume(currentUser.id);
-          } catch (error) {
-            console.error('Auth initialization error:', error);
-            set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+        
+        // Restore token from localStorage
+        try {
+          const storedToken = localStorage.getItem('auth_token');
+          const storedUser = localStorage.getItem('auth_user');
+          
+          if (storedToken && storedUser) {
+            const user = JSON.parse(storedUser);
+            set({ 
+              token: storedToken, 
+              user: user, 
+              isAuthenticated: true, 
+              isLoading: true 
+            });
+            
+            try {
+              // Verify token is still valid by calling getCurrentUser
+              const currentUser = await authService.getCurrentUser();
+              set({ user: currentUser, isLoading: false });
+              // Fetch user's resume after successful authentication
+              useResumeStore.getState().fetchUserResume(currentUser.id);
+            } catch (error) {
+              console.error('Token validation failed:', error);
+              // Clear invalid token
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('auth_user');
+              set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+            }
+          } else {
+            set({ isLoading: false });
           }
-        } else {
-          set({ isLoading: false });
+        } catch (error) {
+          console.error('Auth initialization error:', error);
+          set({ user: null, token: null, isAuthenticated: false, isLoading: false });
         }
       },
 
@@ -59,13 +79,20 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const authData = await authService.login(credentials);
+          
+          // Persist token and user data to localStorage
+          localStorage.setItem('auth_token', authData.access_token);
+          localStorage.setItem('auth_user', JSON.stringify(authData.user));
+          
           set({
             user: authData.user,
             token: authData.access_token,
             isAuthenticated: true,
             isLoading: false,
           });
-          get().initializeAuth();
+          
+          // Fetch user's resume after successful authentication
+          useResumeStore.getState().fetchUserResume(authData.user.id);
         } catch (error: unknown) {
           if (error instanceof Error) {
             set({ error: error.message, isLoading: false });
@@ -81,7 +108,11 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout API call failed, proceeding with local logout.', error);
         } finally {
-          try { sessionStorage.removeItem('guest_mode'); } catch {}
+          try { 
+            sessionStorage.removeItem('guest_mode'); 
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+          } catch {}
           set({ user: null, token: null, isAuthenticated: false, isGuest: false, isLoading: false, error: null });
         }
       },
@@ -90,12 +121,20 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const authData = await authService.signup(userData);
+          
+          // Persist token and user data to localStorage
+          localStorage.setItem('auth_token', authData.access_token);
+          localStorage.setItem('auth_user', JSON.stringify(authData.user));
+          
           set({
             user: authData.user,
             token: authData.access_token,
             isAuthenticated: true,
             isLoading: false,
           });
+          
+          // Fetch user's resume after successful authentication
+          useResumeStore.getState().fetchUserResume(authData.user.id);
         } catch (error: unknown) {
           if (error instanceof Error) {
             set({ error: error.message, isLoading: false });
@@ -109,6 +148,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setAuthData: (token, user) => {
+        // Persist token and user data to localStorage
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        
         set({
           user: user,
           token: token,
