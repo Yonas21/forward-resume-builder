@@ -96,3 +96,14 @@ class SuccessResponse(BaseModel):
     """Generic success response."""
     message: str
     data: Optional[Dict[str, Any]] = None
+
+
+class OptimizedResumeResponse(BaseModel):
+    """Optimized resume response model (AI operations)."""
+    personal_info: Dict[str, Any]
+    professional_summary: str
+    skills: List[Dict[str, Any]]  # Keep as Skill objects for AI operations
+    experience: List[Dict[str, Any]]
+    education: List[Dict[str, Any]]
+    projects: List[Dict[str, Any]]
+    certifications: List[Dict[str, Any]]

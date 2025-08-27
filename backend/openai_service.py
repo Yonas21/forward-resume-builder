@@ -6,6 +6,12 @@ from datetime import date
 from models import Resume, JobDescription
 from core.config import settings
 
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, date):
+            return obj.isoformat()
+        return super().default(obj)
+
 try:
     # New SDK style; if unavailable, fallback will be handled in calls
     from openai import OpenAI
@@ -166,7 +172,7 @@ class OpenAIService:
         Requirements: {', '.join(job_description.requirements)}
         
         Current Resume:
-        {json.dumps(resume_json, indent=2)}
+        {json.dumps(resume_json, indent=2, cls=DateEncoder)}
         
         Return the optimized resume in the same JSON format. Keep all existing information but enhance it for this specific role.
         """
@@ -304,7 +310,7 @@ class OpenAIService:
         Requirements: {', '.join(job_description.requirements)}
 
         Resume:
-        {json.dumps(resume_json, indent=2, default=date_serializer)}
+        {json.dumps(resume_json, indent=2, cls=DateEncoder)}
 
         Return only the cover letter text.
         """
@@ -338,11 +344,6 @@ class OpenAIService:
     async def score_resume(self, resume: Resume, job_description: str = None) -> Dict[str, Any]:
         """Score a resume and provide feedback using AI."""
         
-        def date_serializer(obj):
-            if isinstance(obj, date):
-                return obj.isoformat()
-            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
         resume_json = resume.model_dump()
 
         job_context = ""
@@ -360,7 +361,7 @@ class OpenAIService:
         {job_context}
 
         Resume:
-        {json.dumps(resume_json, indent=2, default=date_serializer)}
+        {json.dumps(resume_json, indent=2, cls=DateEncoder)}
 
         Please provide a detailed analysis including:
         1. Overall score (0-100)

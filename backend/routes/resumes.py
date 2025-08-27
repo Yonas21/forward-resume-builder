@@ -6,8 +6,9 @@ from typing import List
 import logging
 
 from schemas.requests import ResumeUpdateRequest, ResumeScoreRequest
-from models import OptimizeResumeRequest, GenerateResumeRequest, ParseResumeRequest, GenerateCoverLetterRequest
-from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem, ResumeVersionResponse, SuccessResponse
+from models import GenerateResumeRequest, ParseResumeRequest, GenerateCoverLetterRequest
+from schemas.requests import OptimizeResumeRequest
+from schemas.responses import ResumeResponse, ResumeListResponse, ResumeListItem, ResumeVersionResponse, SuccessResponse, OptimizedResumeResponse
 from database import User
 from db_service import ResumeService
 from routes.auth import get_current_user
@@ -348,15 +349,96 @@ async def parse_and_save_resume(
         raise HTTPException(status_code=500, detail="Error parsing resume")
 
 
-@ai_router.post("/optimize-resume", response_model=ResumeResponse, dependencies=[Depends(rate_limit_user(60, 60))])
+@ai_router.post("/optimize-resume", response_model=OptimizedResumeResponse, dependencies=[Depends(rate_limit_user(60, 60))])
 async def optimize_resume(request: OptimizeResumeRequest):
     """Optimize resume for specific job description using AI."""
     try:
+        # Convert dict to Resume model for the service
+        from models import Resume, Skill, SkillLevel
+        
+        # Pre-process the resume data to handle skills conversion
+        resume_data = request.resume.copy()
+        
+        # Convert skills from strings to Skill objects
+        if 'skills' in resume_data and isinstance(resume_data['skills'], list):
+            processed_skills = []
+            for skill_item in resume_data['skills']:
+                if isinstance(skill_item, str) and skill_item and skill_item.strip():
+                    processed_skills.append({
+                        'name': skill_item,
+                        'category_id': 'technical',
+                        'category': 'Technical Skills',
+                        'level': 'intermediate'
+                    })
+                elif isinstance(skill_item, dict) and skill_item and skill_item.get('name'):
+                    processed_skills.append(skill_item)
+            
+            resume_data['skills'] = processed_skills
+        
+        # Handle empty date strings in experience and education
+        if 'experience' in resume_data and isinstance(resume_data['experience'], list):
+            for exp in resume_data['experience']:
+                if isinstance(exp, dict):
+                    if exp.get('start_date') == '':
+                        exp['start_date'] = None
+                    if exp.get('end_date') == '':
+                        exp['end_date'] = None
+        
+        if 'education' in resume_data and isinstance(resume_data['education'], list):
+            for edu in resume_data['education']:
+                if isinstance(edu, dict):
+                    if edu.get('start_date') == '':
+                        edu['start_date'] = None
+                    if edu.get('end_date') == '':
+                        edu['end_date'] = None
+        
+        try:
+            resume_model = Resume(**resume_data)
+        except Exception as validation_error:
+            logger.error(f"Resume validation error: {validation_error}")
+            raise HTTPException(status_code=422, detail=f"Invalid resume data: {str(validation_error)}")
+        
         optimized_resume = await openai_service.optimize_resume_for_job(
-            request.resume, request.job_description
+            resume_model, request.job_description
         )
-        # Map raw dict into response model fields (pass-through for now)
-        return optimized_resume
+        
+        # Convert Resume object to serializable format
+        from datetime import date
+        def serialize_date(obj):
+            if isinstance(obj, date):
+                return obj.isoformat()
+            return obj
+        
+        # Convert to dict and serialize dates
+        resume_dict = optimized_resume.model_dump()
+        
+        # Serialize dates in experience
+        if 'experience' in resume_dict:
+            for exp in resume_dict['experience']:
+                if exp.get('start_date'):
+                    exp['start_date'] = serialize_date(exp['start_date'])
+                if exp.get('end_date'):
+                    exp['end_date'] = serialize_date(exp['end_date'])
+        
+        # Serialize dates in education
+        if 'education' in resume_dict:
+            for edu in resume_dict['education']:
+                if edu.get('start_date'):
+                    edu['start_date'] = serialize_date(edu['start_date'])
+                if edu.get('end_date'):
+                    edu['end_date'] = serialize_date(edu['end_date'])
+        
+        # Serialize dates in certifications
+        if 'certifications' in resume_dict:
+            for cert in resume_dict['certifications']:
+                if cert.get('issue_date'):
+                    cert['issue_date'] = serialize_date(cert['issue_date'])
+                if cert.get('expiration_date'):
+                    cert['expiration_date'] = serialize_date(cert['expiration_date'])
+        
+        return resume_dict
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error optimizing resume: {e}")
         raise HTTPException(status_code=500, detail="Error optimizing resume")
@@ -368,7 +450,42 @@ async def generate_resume(request: GenerateResumeRequest):
         generated_resume = await openai_service.generate_resume_from_job(
             request.job_description, request.user_background
         )
-        return generated_resume
+        
+        # Convert Resume object to serializable format
+        from datetime import date
+        def serialize_date(obj):
+            if isinstance(obj, date):
+                return obj.isoformat()
+            return obj
+        
+        # Convert to dict and serialize dates
+        resume_dict = generated_resume.model_dump()
+        
+        # Serialize dates in experience
+        if 'experience' in resume_dict:
+            for exp in resume_dict['experience']:
+                if exp.get('start_date'):
+                    exp['start_date'] = serialize_date(exp['start_date'])
+                if exp.get('end_date'):
+                    exp['end_date'] = serialize_date(exp['end_date'])
+        
+        # Serialize dates in education
+        if 'education' in resume_dict:
+            for edu in resume_dict['education']:
+                if edu.get('start_date'):
+                    edu['start_date'] = serialize_date(edu['start_date'])
+                if edu.get('end_date'):
+                    edu['end_date'] = serialize_date(edu['end_date'])
+        
+        # Serialize dates in certifications
+        if 'certifications' in resume_dict:
+            for cert in resume_dict['certifications']:
+                if cert.get('issue_date'):
+                    cert['issue_date'] = serialize_date(cert['issue_date'])
+                if cert.get('expiration_date'):
+                    cert['expiration_date'] = serialize_date(cert['expiration_date'])
+        
+        return resume_dict
     except Exception as e:
         logger.error(f"Error generating resume: {e}")
         raise HTTPException(status_code=500, detail="Error generating resume")
