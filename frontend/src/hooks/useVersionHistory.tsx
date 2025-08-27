@@ -134,9 +134,9 @@ export const useVersionHistory = (resumeId: string, config: VersionHistoryConfig
 
   // Calculate diff statistics between two versions
   const calculateDiffStats = useCallback((oldData: Resume, newData: Resume): DiffStats => {
-    const sectionsAdded = 0;
-    const sectionsModified = 0;
-    const sectionsRemoved = 0;
+    let sectionsAdded = 0;
+    let sectionsModified = 0;
+    let sectionsRemoved = 0;
     let totalChanges = 0;
 
     // Compare sections
@@ -407,7 +407,7 @@ export const useVersionHistory = (resumeId: string, config: VersionHistoryConfig
   }, [versions]);
 
   // Auto-save functionality
-  const autoSave = useCallback(async (data: Resume): Promise<void> => {
+  const performAutoSave = useCallback(async (data: Resume): Promise<void> => {
     if (!autoSave) return;
 
     const now = new Date();
@@ -434,7 +434,7 @@ export const useVersionHistory = (resumeId: string, config: VersionHistoryConfig
     restoreVersion,
     createBranch,
     publishVersion,
-    autoSave,
+    autoSave: performAutoSave,
     
     // Queries
     compareVersions,

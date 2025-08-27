@@ -167,6 +167,36 @@ export const RESUME_BUILDER_SHORTCUTS: KeyboardShortcut[] = [
       document.dispatchEvent(escapeEvent);
     },
     description: 'Close modal or clear selection'
+  },
+  {
+    key: 'c',
+    ctrl: true,
+    action: () => {
+      // Toggle collaboration panel
+      const collaborationEvent = new CustomEvent('toggle-collaboration');
+      document.dispatchEvent(collaborationEvent);
+    },
+    description: 'Toggle collaboration panel'
+  },
+  {
+    key: '4',
+    ctrl: true,
+    action: () => {
+      // Navigate to skills section
+      const navEvent = new CustomEvent('resume-navigate', { detail: 'skills' });
+      document.dispatchEvent(navEvent);
+    },
+    description: 'Go to Skills'
+  },
+  {
+    key: '5',
+    ctrl: true,
+    action: () => {
+      // Navigate to projects section
+      const navEvent = new CustomEvent('resume-navigate', { detail: 'projects' });
+      document.dispatchEvent(navEvent);
+    },
+    description: 'Go to Projects'
   }
 ];
 

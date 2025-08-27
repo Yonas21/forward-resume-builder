@@ -71,7 +71,7 @@ export interface FeedbackActivity {
   details: string;
 }
 
-export const useFeedback = (resumeId: string) => {
+export const useFeedback = () => {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats>({
     totalFeedback: 0,
@@ -397,7 +397,7 @@ export const useFeedback = (resumeId: string) => {
       return 0;
     });
 
-    return scores.reduce((a, b) => a + b, 0) / scores.length;
+    return scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
   }, [feedback]);
 
   return {

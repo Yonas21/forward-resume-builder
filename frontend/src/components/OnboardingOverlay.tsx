@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useOnboarding, OnboardingStep } from '../hooks/useOnboarding';
+import type { OnboardingStep } from '../hooks/useOnboarding';
 
 interface OnboardingOverlayProps {
   isActive: boolean;

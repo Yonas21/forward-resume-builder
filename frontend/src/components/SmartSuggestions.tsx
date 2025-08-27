@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { JobSuggestion } from '../hooks/useSmartSuggestions';
+import type { JobSuggestion } from '../hooks/useSmartSuggestions';
 
 interface SmartSuggestionsProps {
   suggestions: JobSuggestion[];

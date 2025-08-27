@@ -23,7 +23,16 @@ const mapResumeFromBackend = (data: Partial<Resume>): Resume => {
 const mapResumeToBackend = (resume: Resume) => {
   return {
     ...resume,
-    skills: Array.isArray(resume.skills) ? resume.skills.map((s) => s.name) : [],
+    skills: Array.isArray(resume.skills) 
+      ? resume.skills
+          .filter((s) => s && s.name && s.name.trim() !== '') // Filter out null/empty skills
+          .map((s) => ({
+            name: s.name,
+            category_id: s.category_id || 'technical',
+            category: s.category || 'Technical Skills',
+            level: s.level || 'intermediate'
+          })) 
+      : [],
   };
 };
 

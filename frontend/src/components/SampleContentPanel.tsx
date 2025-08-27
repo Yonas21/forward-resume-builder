@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SampleContent, getSampleContent, getAvailableIndustries } from '../data/sampleContent';
+import { getSampleContent, getAvailableIndustries } from '../data/sampleContent';
+import type { SampleContent } from '../data/sampleContent';
 
 interface SampleContentPanelProps {
   section: string;

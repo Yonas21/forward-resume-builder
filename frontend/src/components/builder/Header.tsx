@@ -11,9 +11,11 @@ interface HeaderProps {
   font: string;
   color: string;
   onStartOnboarding?: () => void;
+  collaborationActive?: boolean;
+  collaboratorCount?: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color, onStartOnboarding }) => {
+export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color, onStartOnboarding, collaborationActive = false, collaboratorCount = 0 }) => {
   const navigate = useNavigate();
 
   const handlePreview = () => {
@@ -51,6 +53,17 @@ export const Header: React.FC<HeaderProps> = ({ selectedTemplate, font, color, o
                 <CompactCompletionIndicator />
                 {onStartOnboarding && (
                   <OnboardingTrigger onStart={onStartOnboarding} />
+                )}
+                {collaborationActive && (
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Collaborating</span>
+                    {collaboratorCount > 0 && (
+                      <span className="bg-green-200 px-2 py-0.5 rounded-full text-xs">
+                        {collaboratorCount} active
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

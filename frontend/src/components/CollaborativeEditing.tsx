@@ -1,29 +1,21 @@
 import React, { useState } from 'react';
-import { Collaborator, CollaborationSession } from '../hooks/useCollaborativeEditing';
+import type { Collaborator, CollaborationSession } from '../hooks/useCollaborativeEditing';
 
 interface CollaborativeEditingProps {
   session: CollaborationSession | null;
   collaborators: Collaborator[];
-  currentUser: Collaborator | null;
   onInitializeSession: (user: any) => Promise<CollaborationSession>;
   onJoinSession: (sessionId: string, user: any) => Promise<CollaborationSession>;
   onLeaveSession: () => Promise<void>;
-  onUpdateCursorPosition: (position: any) => void;
-  onUpdateCurrentSection: (section: string) => void;
-  isLoading?: boolean;
   className?: string;
 }
 
 export const CollaborativeEditing: React.FC<CollaborativeEditingProps> = ({
   session,
   collaborators,
-  currentUser,
   onInitializeSession,
   onJoinSession,
   onLeaveSession,
-  onUpdateCursorPosition,
-  onUpdateCurrentSection,
-  isLoading = false,
   className = ''
 }) => {
   const [showJoinForm, setShowJoinForm] = useState(false);

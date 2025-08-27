@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Version, VersionDiff, SectionDiff, FieldChange } from '../hooks/useVersionHistory';
+import type { Version, VersionDiff } from '../hooks/useVersionHistory';
 
 interface VersionHistoryProps {
   versions: Version[];
@@ -14,12 +14,9 @@ interface VersionHistoryProps {
 
 export const VersionHistory: React.FC<VersionHistoryProps> = ({
   versions,
-  currentVersion,
   onRestoreVersion,
   onCompareVersions,
   onPublishVersion,
-  onCreateBranch,
-  isLoading = false,
   className = ''
 }) => {
   const [selectedVersions, setSelectedVersions] = useState<[string, string] | null>(null);

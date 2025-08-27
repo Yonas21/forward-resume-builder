@@ -1,25 +1,21 @@
 import React, { useState } from 'react';
-import { Feedback, FeedbackReply, FeedbackTemplate } from '../hooks/useFeedback';
+import type { Feedback, FeedbackReply } from '../hooks/useFeedback';
 
 interface FeedbackPanelProps {
   feedback: Feedback[];
   feedbackStats: any;
-  onAddFeedback: (feedbackData: any) => Promise<Feedback>;
   onUpdateFeedbackStatus: (feedbackId: string, status: string, resolvedBy?: string) => Promise<void>;
   onAddReply: (feedbackId: string, replyData: any) => Promise<FeedbackReply>;
   onShowFeedbackForm: () => void;
-  isLoading?: boolean;
   className?: string;
 }
 
 export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
   feedback,
   feedbackStats,
-  onAddFeedback,
   onUpdateFeedbackStatus,
   onAddReply,
   onShowFeedbackForm,
-  isLoading = false,
   className = ''
 }) => {
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
@@ -136,7 +132,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
           <button
             onClick={onShowFeedbackForm}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={isLoading}
+                         disabled={false}
           >
             Request Feedback
           </button>

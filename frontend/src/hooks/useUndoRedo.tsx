@@ -38,7 +38,7 @@ export const useUndoRedo = (config: UndoRedoConfig = {}) => {
     maxEntries
   });
 
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastResumeRef = useRef<Resume | null>(null);
   const isUndoRedoActionRef = useRef(false);
 

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { Resume } from '../types';
+
 
 export interface Collaborator {
   id: string;
@@ -83,8 +83,8 @@ export const useCollaborativeEditing = (
   const [isLoading, setIsLoading] = useState(false);
 
   const operationQueue = useRef<EditOperation[]>([]);
-  const presenceTimer = useRef<NodeJS.Timeout | null>(null);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const presenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize collaboration session
   const initializeSession = useCallback(async (user: Omit<Collaborator, 'isOnline' | 'lastSeen'>): Promise<CollaborationSession> => {
@@ -124,7 +124,7 @@ export const useCollaborativeEditing = (
 
   // Join existing session
   const joinSession = useCallback(async (
-    sessionId: string,
+
     user: Omit<Collaborator, 'isOnline' | 'lastSeen'>
   ): Promise<CollaborationSession> => {
     setIsLoading(true);

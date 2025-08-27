@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useResumeStore } from '../store/resumeStore';
 import { LoadingButton } from './LoadingSpinner';
 import { useFormValidation } from '../hooks/useFormValidation';
-import { TouchButton } from '../hooks/useMobileOptimization.tsx';
+import { TouchButton } from './MobileComponents';
 
 const SkillsBuilder: React.FC = () => {
   const { resume, addSkill, updateSkill, deleteSkill } = useResumeStore();

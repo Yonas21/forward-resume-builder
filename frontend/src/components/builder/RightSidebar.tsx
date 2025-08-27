@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { SettingsPanel } from './SettingsPanel';
-import { SmartSuggestions, SuggestionChips } from '../SmartSuggestions';
-import { SampleContentPanel, QuickSampleSelector } from '../SampleContentPanel';
+import { SmartSuggestions } from '../SmartSuggestions';
+import { SampleContentPanel } from '../SampleContentPanel';
 import { HelpTrigger } from '../ContextualHelpTooltip';
 
 interface RightSidebarProps {
@@ -117,8 +117,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             {suggestions.length > 0 ? (
               <SmartSuggestions
                 suggestions={suggestions}
-                onSelectSuggestion={onSelectSuggestion}
-                onApplySuggestions={onApplySuggestions}
+                onSelectSuggestion={onSelectSuggestion || (() => {})}
+                onApplySuggestions={onApplySuggestions || (() => {})}
                 selectedSuggestions={selectedSuggestions}
               />
             ) : (

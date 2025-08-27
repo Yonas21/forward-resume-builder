@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { ShareLink, ShareSettings, ShareStats } from '../hooks/useSharing';
+import type { ShareLink, ShareSettings, ShareStats } from '../hooks/useSharing';
 
 interface SharingPanelProps {
   shareLinks: ShareLink[];
   shareStats: ShareStats;
   onCreateShareLink: (settings: ShareSettings) => Promise<ShareLink>;
   onRevokeShareLink: (linkId: string) => Promise<void>;
-  onUpdateShareLink: (linkId: string, settings: Partial<ShareSettings>) => Promise<void>;
   onCopyShareUrl: (link: ShareLink) => Promise<boolean>;
-  isLoading?: boolean;
   className?: string;
 }
 
@@ -17,9 +15,7 @@ export const SharingPanel: React.FC<SharingPanelProps> = ({
   shareStats,
   onCreateShareLink,
   onRevokeShareLink,
-  onUpdateShareLink,
   onCopyShareUrl,
-  isLoading = false,
   className = ''
 }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -96,7 +92,7 @@ export const SharingPanel: React.FC<SharingPanelProps> = ({
           <button
             onClick={() => setShowCreateForm(true)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={isLoading}
+                         disabled={false}
           >
             Create Share Link
           </button>

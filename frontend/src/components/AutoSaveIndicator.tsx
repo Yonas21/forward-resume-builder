@@ -178,7 +178,7 @@ export const FloatingAutoSaveIndicator: React.FC<{
   
   const status = getStatus();
   
-  if (status === 'idle' || status === 'saved') return null;
+  if (status === 'idle') return null;
 
   const getIndicatorColor = () => {
     switch (status) {

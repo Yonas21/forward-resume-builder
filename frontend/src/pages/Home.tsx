@@ -6,6 +6,7 @@ import { OnboardingOverlay } from '../components/OnboardingOverlay';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
   const { continueAsGuest } = useAuthStore();
   const { 
     hasCompletedOnboarding, 
@@ -114,7 +115,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Guest mode */}
-        <div className="max-w-3xl mx-auto mb-8">
+        {!isAuthenticated && <div className="max-w-3xl mx-auto mb-8">
           <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between">
             <div className="mb-3 md:mb-0 md:mr-4 text-center md:text-left">
               <h3 className="font-semibold text-gray-900">Just exploring?</h3>
@@ -127,7 +128,7 @@ const Home: React.FC = () => {
               Continue as guest
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* Main CTA Options */}
         <div className="max-w-4xl mx-auto">

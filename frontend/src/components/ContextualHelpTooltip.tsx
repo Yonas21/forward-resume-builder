@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { HelpTip } from '../hooks/useContextualHelp';
+import type { HelpTip } from '../hooks/useContextualHelp';
 
 interface ContextualHelpTooltipProps {
   tip: HelpTip;
