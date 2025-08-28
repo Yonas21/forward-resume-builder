@@ -150,7 +150,7 @@ interface ResumePDFProps {
   font?: 'font-sans' | 'font-serif' | 'font-mono';
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ resume, sectionOrder = ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'], color = '#333333', font = 'font-sans' }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ resume, sectionOrder = ['personal', 'summary', 'skills', 'experience', 'education', 'projects', 'certifications'], color = '#333333', font = 'font-sans' }) => {
   // Map UI font to PDF font. If you register a custom font (e.g., Inter), use that here.
   const pdfFont = font === 'font-serif' ? 'Times-Roman' : font === 'font-mono' ? 'Courier' : 'Helvetica';
   const styles = createStyles(color, pdfFont);
