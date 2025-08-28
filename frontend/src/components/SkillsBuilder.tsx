@@ -4,6 +4,7 @@ import { useResumeStore } from '../store/resumeStore';
 import { LoadingButton } from './LoadingSpinner';
 import { useFormValidation } from '../hooks/useFormValidation';
 import { TouchButton } from './MobileComponents';
+import { skillCategories } from '../utils/settings';
 
 const SkillsBuilder: React.FC = () => {
   const { resume, addSkill, updateSkill, deleteSkill } = useResumeStore();
@@ -26,7 +27,7 @@ const SkillsBuilder: React.FC = () => {
     setIsAddingSkill(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate async operation
-      addSkill({ name: '', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' });
+      addSkill({ name: '', category_id: 'programming', category: 'Programming Languages', level: 'intermediate' });
     } finally {
       setIsAddingSkill(false);
     }
@@ -71,7 +72,7 @@ const SkillsBuilder: React.FC = () => {
           <h4 className="text-lg font-medium text-gray-900 mb-2">No skills added yet</h4>
           <p className="text-gray-600 mb-4">Add your skills to highlight your expertise</p>
           <button
-            onClick={() => addSkill({ name: '', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' })}
+            onClick={() => addSkill({ name: '', category_id: 'programming', category: 'Programming Languages', level: 'intermediate' })}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,6 +100,23 @@ const SkillsBuilder: React.FC = () => {
                   <p className="text-xs text-red-600 mt-1">{validation.getFieldError('skillName')}</p>
                 )}
               </div>
+              <select
+                value={skill.category_id}
+                onChange={(e) => {
+                  const category = skillCategories.find(cat => cat.id === e.target.value);
+                  updateSkill(index, { 
+                    category_id: e.target.value, 
+                    category: category?.name || e.target.value 
+                  });
+                }}
+                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {skillCategories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
               <select
                 value={skill.level}
                 onChange={(e) => updateSkill(index, { level: e.target.value as 'beginner' | 'intermediate' | 'advanced' | 'expert' })}
