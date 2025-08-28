@@ -5,6 +5,11 @@ import apiClient from './apiClient';
 interface ResumeListResponse {
   resumes: Resume[];
   total_count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
 }
 
 class ResumeService {
@@ -15,10 +20,10 @@ class ResumeService {
     return response.data;
   }
 
-  async getUserResumes(userId: string): Promise<ResumeListResponse> {
+  async getUserResumes(page: number = 1, limit: number = 20): Promise<ResumeListResponse> {
     const response: AxiosResponse<ResumeListResponse> = await apiClient.get(
       `/resumes`,
-      { params: { userId } } // Pass userId as a query parameter if needed by backend
+      { params: { page, limit } }
     );
     return response.data;
   }
