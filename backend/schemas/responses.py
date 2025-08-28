@@ -55,6 +55,11 @@ class ResumeListResponse(BaseModel):
     """Resume list response model."""
     resumes: List[ResumeListItem]
     total_count: int
+    page: int
+    limit: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
 
 
 class ResumeResponse(BaseModel):
