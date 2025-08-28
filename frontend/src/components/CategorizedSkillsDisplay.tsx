@@ -17,27 +17,72 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
   showLevels = true,
   maxSkillsPerCategory = 10
 }) => {
+
+
   const getSkillsByCategory = () => {
     const grouped: { [key: string]: Skill[] } = {};
+      console.log('skills', skills);
     skills.forEach(skill => {
-      if (!grouped[skill.category]) {
-        grouped[skill.category] = [];
+      const categoryKey = skill.category_id || skill.category;
+      if (!grouped[categoryKey]) {
+        grouped[categoryKey] = [];
       }
-      grouped[skill.category].push(skill);
+      grouped[categoryKey].push(skill);
     });
     return grouped;
   };
 
   const getCategoryName = (categoryId: string) => {
-    return skillCategories.find(cat => cat.id === categoryId)?.name || categoryId;
+    // Handle edge cases
+    if (!categoryId) return 'Other Skills';
+    
+    const found = skillCategories.find(cat => cat.id === categoryId);
+    if (found) {
+      return found.name;
+    }
+    
+    // Fallback: try to find by name instead of id
+    const foundByName = skillCategories.find(cat => cat.name === categoryId);
+    if (foundByName) {
+      return foundByName.name;
+    }
+    
+    // Final fallback
+    return categoryId || 'Other Skills';
   };
 
   const getCategoryIcon = (categoryId: string) => {
-    return skillCategories.find(cat => cat.id === categoryId)?.icon || '📋';
+    if (!categoryId) return '📋';
+    
+    const found = skillCategories.find(cat => cat.id === categoryId);
+    if (found) {
+      return found.icon;
+    }
+    
+    // Fallback: try to find by name instead of id
+    const foundByName = skillCategories.find(cat => cat.name === categoryId);
+    if (foundByName) {
+      return foundByName.icon;
+    }
+    
+    return '📋';
   };
 
   const getCategoryDescription = (categoryId: string) => {
-    return skillCategories.find(cat => cat.id === categoryId)?.description || '';
+    if (!categoryId) return '';
+    
+    const found = skillCategories.find(cat => cat.id === categoryId);
+    if (found) {
+      return found.description;
+    }
+    
+    // Fallback: try to find by name instead of id
+    const foundByName = skillCategories.find(cat => cat.name === categoryId);
+    if (foundByName) {
+      return foundByName.description;
+    }
+    
+    return '';
   };
 
   const getLevelColor = (level: Skill['level']) => {
@@ -50,6 +95,18 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
 
   const groupedSkills = getSkillsByCategory();
 
+  // If no skills, show empty state
+  if (!skills || skills.length === 0) {
+    return (
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold mb-2 border-b" style={{ color }}>
+          Skills
+        </h2>
+        <p className="text-gray-500 text-sm">No skills added yet.</p>
+      </div>
+    );
+  }
+
   // Compact variant - all skills in one section
   if (variant === 'compact') {
     return (
@@ -58,14 +115,14 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
           Skills
         </h2>
         <div className="flex flex-wrap gap-1">
-          {skills.slice(0, maxSkillsPerCategory).map((skill, index) => (
-            <span key={index} className="bg-gray-100 px-2 py-1 rounded text-sm">
-              {skill.toString()}
-              {showLevels && skill.level !== 'intermediate' && (
-                <span className="text-xs text-gray-500 ml-1">({skill.level})</span>
-              )}
-            </span>
-          ))}
+                      {skills.slice(0, maxSkillsPerCategory).map((skill, index) => (
+              <span key={index} className="bg-gray-100 px-2 py-1 rounded text-sm">
+                {skill.name}
+                {showLevels && skill.level !== 'intermediate' && (
+                  <span className="text-xs text-gray-500 ml-1">({skill.level})</span>
+                )}
+              </span>
+            ))}
         </div>
       </div>
     );
@@ -78,10 +135,10 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
         <h2 className="text-lg font-semibold mb-2 border-b" style={{ color }}>
           Skills
         </h2>
-        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-          <div key={category} className="mb-2">
+        {Object.entries(groupedSkills).map(([categoryId, categorySkills]) => (
+          <div key={categoryId} className="mb-2">
             <span className="text-sm font-medium text-gray-700">
-              {getCategoryName(category)}:
+              {getCategoryName(categoryId)}:
             </span>
             <span className="text-sm text-gray-600 ml-1">
               {categorySkills.slice(0, maxSkillsPerCategory).map(s => s.name).join(', ')}
@@ -91,7 +148,6 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
       </div>
     );
   }
-
   // Detailed variant - full categorized display
   return (
     <div className="mb-4">
@@ -99,17 +155,17 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
         Skills
       </h2>
       <div className="space-y-4">
-        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-          <div key={category} className="border-l-4 pl-4 py-2" style={{ borderColor: color }}>
+        {Object.entries(groupedSkills).map(([categoryId, categorySkills]) => (
+          <div key={categoryId} className="border-l-4 pl-4 py-2" style={{ borderColor: color }}>
             <div className="flex items-center mb-2">
-              <span className="mr-2 text-lg">{getCategoryIcon(category)}</span>
+              <span className="mr-2 text-lg">{getCategoryIcon(categoryId)}</span>
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">
-                  {getCategoryName(category) ? "Technical Skills" : "Other Skills"}
+                  {getCategoryName(categoryId)}
                 </h3>
-                {getCategoryDescription(category) && (
+                {getCategoryDescription(categoryId) && (
                   <p className="text-xs text-gray-500 mt-1">
-                    {getCategoryDescription(category) ?? "Languages"}
+                    {getCategoryDescription(categoryId)}
                   </p>
                 )}
               </div>
@@ -125,7 +181,7 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
                     border: `1px solid ${color}30`
                   }}
                 >
-                  {skill.toString()}
+                  {skill.name}
                   {showLevels && skill.level !== 'intermediate' && (
                     <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${getLevelColor(skill.level)}`}>
                       {getLevelLabel(skill.level)}
