@@ -24,12 +24,18 @@ A comprehensive, production-ready resume builder application featuring a modern 
 - 🚦 **CORS Configuration**: Proper cross-origin resource sharing setup
 - 📝 **Comprehensive Logging**: Structured logging for debugging and monitoring
 - ⚡ **Performance Optimized**: Fast file processing and API responses
+- 🚀 **Redis Caching**: Intelligent caching for AI responses and user data
+- 📄 **Lazy Loading**: Efficient template loading with profession-specific designs
+- 📊 **Pagination**: Optimized handling of large resume collections
+- 🌐 **CDN Integration**: Optimized static asset delivery with WebP/AVIF support
 
 ## Tech Stack
 
 ### Backend
 - **FastAPI**: Modern Python web framework
 - **OpenAI API**: GPT-powered resume processing
+- **Redis**: High-performance caching layer
+- **MongoDB**: Document database with Beanie ODM
 - **PyPDF2**: PDF text extraction
 - **python-docx**: Word document processing
 - **Pydantic**: Data validation and serialization
@@ -40,6 +46,7 @@ A comprehensive, production-ready resume builder application featuring a modern 
 - **Tailwind CSS**: Utility-first CSS framework
 - **React Router**: Client-side routing
 - **Axios**: HTTP client for API calls
+- **Intersection Observer**: Lazy loading for images and components
 
 ## Project Structure
 
@@ -61,6 +68,7 @@ resume-builder/
 │   │   └── App.tsx         # Main app component
 │   ├── package.json        # Node.js dependencies
 │   └── tailwind.config.js  # Tailwind configuration
+├── PERFORMANCE_IMPROVEMENTS.md  # Performance optimization guide
 └── README.md               # This file
 ```
 
@@ -70,6 +78,8 @@ resume-builder/
 - Python 3.8+
 - Node.js 18+
 - OpenAI API key
+- Redis (for caching)
+- MongoDB (for data storage)
 
 ### Backend Setup
 
