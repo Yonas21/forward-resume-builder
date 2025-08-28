@@ -10,6 +10,8 @@ import { sampleResume } from '../data/sample';
 
 const ResumePreview: React.FC = () => {
   const { resume: storeResume, fetchMyResume } = useResumeStore();
+  
+
 
   useEffect(() => {
     fetchMyResume();
@@ -245,6 +247,12 @@ const ResumePreview: React.FC = () => {
 
   const resumeToDisplay = isResumeEmpty(storeResume) ? sampleResume : storeResume;
   
+
+  
+
+  
+
+  
   // Show a banner if using sample data
   const isUsingSampleData = isResumeEmpty(storeResume);
 
@@ -256,7 +264,7 @@ const ResumePreview: React.FC = () => {
     }
     // Fallback to localStorage
     const stored = localStorage.getItem('sectionOrder');
-    return stored ? JSON.parse(stored) : ['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'];
+    return stored ? JSON.parse(stored) : ['personal', 'summary', 'skills', 'experience', 'education', 'projects', 'certifications'];
   });
 
   // Find the selected template component
