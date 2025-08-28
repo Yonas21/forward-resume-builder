@@ -30,15 +30,7 @@ interface ResumeState {
   fetchUserResume: (userId: string) => Promise<void>;
 }
 
-const initialResume: Resume = {
-  personal_info: { full_name: '', email: '', phone: '', location: '', linkedin: '', github: '', website: '' },
-  professional_summary: '',
-  skills: [],
-  experience: [],
-  education: [],
-  projects: [],
-  certifications: []
-};
+const initialResume: Resume = sampleResume;
 
 export const useResumeStore = create<ResumeState>()(
   (set) => ({
