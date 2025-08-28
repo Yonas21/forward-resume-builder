@@ -7,7 +7,7 @@ const mapSkillsFromBackend = (skills: unknown): Skill[] => {
   if (!Array.isArray(skills)) return [];
   return skills.map((s) => {
     if (typeof s === 'string') {
-      return { name: s, category_id: 'technical', category: 'Technical Skills', level: 'intermediate' as const };
+      return { name: s, category_id: 'programming', category: 'Programming Languages', level: 'intermediate' as const };
     }
     return s as Skill; // assume already proper shape
   });
@@ -28,8 +28,8 @@ const mapResumeToBackend = (resume: Resume) => {
           .filter((s) => s && s.name && s.name.trim() !== '') // Filter out null/empty skills
           .map((s) => ({
             name: s.name,
-            category_id: s.category_id || 'technical',
-            category: s.category || 'Technical Skills',
+            category_id: s.category_id || 'programming',
+            category: s.category || 'Programming Languages',
             level: s.level || 'intermediate'
           })) 
       : [],

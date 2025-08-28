@@ -12,18 +12,18 @@ export const sampleResume: Resume = {
     },
     professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
     skills: [
-      { name: 'SQL', category_id: 'databases', category: 'Databases', level: 'advanced' },
-      { name: 'Python', category_id: 'technical', category: 'Technical Skills', level: 'expert' },
-      { name: 'R', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'Tableau', category_id: 'tools', category: 'Tools & Platforms', level: 'advanced' },
-      { name: 'Power BI', category_id: 'tools', category: 'Tools & Platforms', level: 'intermediate' },
+      { name: 'SQL', category_id: 'databases', category: 'Databases & Storage', level: 'advanced' },
+      { name: 'Python', category_id: 'programming', category: 'Programming Languages', level: 'expert' },
+      { name: 'R', category_id: 'programming', category: 'Programming Languages', level: 'advanced' },
+      { name: 'Tableau', category_id: 'data_analysis', category: 'Data Analysis', level: 'advanced' },
+      { name: 'Power BI', category_id: 'data_analysis', category: 'Data Analysis', level: 'intermediate' },
       { name: 'Excel', category_id: 'tools', category: 'Tools & Platforms', level: 'expert' },
-      { name: 'Statistical Analysis', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'Data Visualization', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'Machine Learning', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' },
-      { name: 'A/B Testing', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' },
-      { name: 'Data Cleaning', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'ETL Processes', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' }
+      { name: 'Statistical Analysis', category_id: 'statistics', category: 'Statistics & Math', level: 'advanced' },
+      { name: 'Data Visualization', category_id: 'data_analysis', category: 'Data Analysis', level: 'advanced' },
+      { name: 'Machine Learning', category_id: 'machine_learning', category: 'Machine Learning', level: 'intermediate' },
+      { name: 'A/B Testing', category_id: 'statistics', category: 'Statistics & Math', level: 'intermediate' },
+      { name: 'Data Cleaning', category_id: 'data_analysis', category: 'Data Analysis', level: 'advanced' },
+      { name: 'ETL Processes', category_id: 'data_analysis', category: 'Data Analysis', level: 'intermediate' }
     ],
     experience: [
       {
@@ -103,10 +103,10 @@ export const sampleTemplateResume: Resume = {
         },
         professional_summary: 'Experienced professional with expertise in modern technologies and proven track record of success.',
         skills: [
-          { name: 'JavaScript', category_id: 'languages', category: 'Languages', level: 'advanced' },
+          { name: 'JavaScript', category_id: 'programming', category: 'Programming Languages', level: 'advanced' },
           { name: 'React', category_id: 'frameworks', category: 'Frameworks & Libraries', level: 'advanced' },
           { name: 'Node.js', category_id: 'frameworks', category: 'Frameworks & Libraries', level: 'intermediate' },
-          { name: 'Python', category_id: 'languages', category: 'Languages', level: 'intermediate' },
+          { name: 'Python', category_id: 'programming', category: 'Programming Languages', level: 'intermediate' },
         ],
         experience: [{
           company: 'Tech Corp',
@@ -140,18 +140,18 @@ export const samplePreviewResume: Resume = {
     },
     professional_summary: 'Detail-oriented Data Analyst with 4+ years of experience transforming complex datasets into actionable insights. Proficient in statistical analysis, data visualization, and communicating findings to technical and non-technical stakeholders.',
     skills: [
-      { name: 'SQL', category_id: 'languages', category: 'Languages', level: 'expert' },
-      { name: 'Python', category_id: 'languages', category: 'Languages', level: 'expert' },
-      { name: 'R', category_id: 'languages', category: 'Languages', level: 'advanced' },
-      { name: 'Tableau', category_id: 'tools', category: 'Tools & Platforms', level: 'expert' },
-      { name: 'Power BI', category_id: 'tools', category: 'Tools & Platforms', level: 'advanced' },
+      { name: 'SQL', category_id: 'databases', category: 'Databases & Storage', level: 'expert' },
+      { name: 'Python', category_id: 'programming', category: 'Programming Languages', level: 'expert' },
+      { name: 'R', category_id: 'programming', category: 'Programming Languages', level: 'advanced' },
+      { name: 'Tableau', category_id: 'data_analysis', category: 'Data Analysis', level: 'expert' },
+      { name: 'Power BI', category_id: 'data_analysis', category: 'Data Analysis', level: 'advanced' },
       { name: 'Excel', category_id: 'tools', category: 'Tools & Platforms', level: 'expert' },
-      { name: 'Statistical Analysis', category_id: 'technical', category: 'Technical Skills', level: 'expert' },
-      { name: 'Data Visualization', category_id: 'technical', category: 'Technical Skills', level: 'expert' },
-      { name: 'Machine Learning', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'A/B Testing', category_id: 'technical', category: 'Technical Skills', level: 'advanced' },
-      { name: 'Data Cleaning', category_id: 'technical', category: 'Technical Skills', level: 'expert' },
-      { name: 'ETL Processes', category_id: 'technical', category: 'Technical Skills', level: 'intermediate' },
+      { name: 'Statistical Analysis', category_id: 'statistics', category: 'Statistics & Math', level: 'expert' },
+      { name: 'Data Visualization', category_id: 'data_analysis', category: 'Data Analysis', level: 'expert' },
+      { name: 'Machine Learning', category_id: 'machine_learning', category: 'Machine Learning', level: 'advanced' },
+      { name: 'A/B Testing', category_id: 'statistics', category: 'Statistics & Math', level: 'advanced' },
+      { name: 'Data Cleaning', category_id: 'data_analysis', category: 'Data Analysis', level: 'expert' },
+      { name: 'ETL Processes', category_id: 'data_analysis', category: 'Data Analysis', level: 'intermediate' },
     ],
     experience: [
       {
@@ -241,23 +241,14 @@ export const previewTemplates = [
 ];
 
 
-export const skillCategories = [
-  { id: 'technical', name: 'Technical Skills', icon: '💻' },
-  { id: 'soft', name: 'Soft Skills', icon: '🤝' },
-  { id: 'languages', name: 'Languages', icon: '🌍' },
-  { id: 'tools', name: 'Tools & Platforms', icon: '🛠️' },
-  { id: 'frameworks', name: 'Frameworks & Libraries', icon: '📚' },
-  { id: 'databases', name: 'Databases', icon: '🗄️' },
-  { id: 'cloud', name: 'Cloud & DevOps', icon: '☁️' },
-  { id: 'design', name: 'Design & Creative', icon: '🎨' }
-];
+
 
 export const suggestedSkills = {
-  technical: [
+  programming: [
     'JavaScript', 'Python', 'Java', 'C++', 'C#', 'TypeScript', 'Go', 'Rust', 'PHP', 'Ruby',
     'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Assembly', 'Shell Scripting', 'SQL'
   ],
-  soft: [
+  communication: [
     'Leadership', 'Communication', 'Problem Solving', 'Teamwork', 'Time Management',
     'Critical Thinking', 'Adaptability', 'Creativity', 'Emotional Intelligence', 'Negotiation',
     'Public Speaking', 'Project Management', 'Mentoring', 'Conflict Resolution'
