@@ -16,9 +16,11 @@ from core.error_handlers import (
     general_exception_handler
 )
 from database import init_database, close_database
+from utils.redis_cache import cache
 from routes.auth import router as auth_router
 from routes.resumes import router as resume_router
 from routes.health import router as health_router
+from routes.templates import router as templates_router
 
 # Configure logging
 logging.basicConfig(
@@ -47,19 +49,26 @@ app.add_middleware(
 # Database lifecycle events
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database connection on startup."""
+    """Initialize database and cache connections on startup."""
     logger.info("Starting application...")
+    
+    # Initialize database
     success = await init_database()
     if not success:
         logger.error("Failed to initialize database")
         raise RuntimeError("Database initialization failed")
+    
+    # Initialize Redis cache
+    await cache.connect()
+    
     logger.info("Application started successfully")
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Close database connection on shutdown."""
+    """Close database and cache connections on shutdown."""
     logger.info("Shutting down application...")
     await close_database()
+    await cache.disconnect()
     logger.info("Application shutdown complete")
 
 # Exception handlers
@@ -72,6 +81,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 app.include_router(auth_router)
 app.include_router(resume_router)
 app.include_router(health_router)
+app.include_router(templates_router)
 
 # Root endpoint
 @app.get("/")
