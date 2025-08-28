@@ -152,9 +152,9 @@ const ResumeBuilder: React.FC = () => {
   const [sectionOrder, setSectionOrder] = useState([
     'personal',
     'summary',
+    'skills',
     'experience',
     'education',
-    'skills',
     'projects',
     'certifications'
   ]);
