@@ -5,6 +5,7 @@ from datetime import date
 
 from models import Resume, JobDescription
 from core.config import settings
+from utils.redis_cache import cache_ai_response
 
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -27,6 +28,7 @@ class OpenAIService:
             api_key=settings.open_router_key,
         ) if OpenAI else None
     
+    @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours
     async def parse_resume(self, resume_text: str, pre_processed_hints: Dict[str, Any] = None) -> Resume:
         """Parse resume text and extract structured information
         
@@ -153,6 +155,7 @@ class OpenAIService:
             print(f"Error parsing resume: {e}")
             return Resume()
     
+    @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours
     async def optimize_resume_for_job(self, resume: Resume, job_description: JobDescription) -> Resume:
         """Optimize resume based on job description"""
         
@@ -209,6 +212,7 @@ class OpenAIService:
             print(f"Error optimizing resume: {e}")
             return resume
     
+    @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours
     async def generate_resume_from_job(self, job_description: JobDescription, user_background: str = None) -> Resume:
         """Generate a resume template based on job description"""
         
@@ -284,6 +288,7 @@ class OpenAIService:
             print(f"Error generating resume: {e}")
             return Resume()
 
+    @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours
     async def generate_cover_letter(self, resume: Resume, job_description: JobDescription) -> str:
         """Generate a cover letter based on the resume and job description."""
         
@@ -341,6 +346,7 @@ class OpenAIService:
             print(f"Error generating cover letter: {e}")
             return "Error generating cover letter."
 
+    @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours
     async def score_resume(self, resume: Resume, job_description: str = None) -> Dict[str, Any]:
         """Score a resume and provide feedback using AI."""
         
