@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     mongodb_url: str
     database_name: str
     
+    # Redis Cache
+    redis_url: str = "redis://localhost:6379/0"
+    redis_password: str = ""
+    redis_cache_ttl: int = 3600  # 1 hour default
+    redis_user_cache_ttl: int = 1800  # 30 minutes for user data
+    redis_ai_cache_ttl: int = 7200  # 2 hours for AI responses
+    
     # OpenAI
     openai_api_key: str
     openai_model: str = "gpt-3.5-turbo"
