@@ -1,0 +1,55 @@
+{
+  "cdn": {
+    "enabled": true,
+    "baseUrl": "https://cdn.resumebuilder.com",
+    "assets": {
+      "images": {
+        "path": "/images",
+        "formats": ["jpg", "jpeg", "png", "webp", "svg"],
+        "optimization": {
+          "quality": 85,
+          "formats": ["webp", "avif"],
+          "sizes": [320, 640, 1280, 1920]
+        }
+      },
+      "templates": {
+        "path": "/templates",
+        "previews": "/templates/previews",
+        "thumbnails": "/templates/thumbnails"
+      },
+      "fonts": {
+        "path": "/fonts",
+        "families": [
+          "Inter",
+          "Roboto", 
+          "Poppins",
+          "Montserrat",
+          "Open Sans",
+          "Segoe UI"
+        ]
+      },
+      "icons": {
+        "path": "/icons",
+        "sprite": "/icons/sprite.svg"
+      }
+    },
+    "caching": {
+      "images": {
+        "maxAge": 31536000,
+        "immutable": true
+      },
+      "fonts": {
+        "maxAge": 31536000,
+        "immutable": true
+      },
+      "templates": {
+        "maxAge": 86400,
+        "immutable": false
+      }
+    },
+    "compression": {
+      "enabled": true,
+      "algorithms": ["gzip", "brotli"]
+    }
+  }
+}
