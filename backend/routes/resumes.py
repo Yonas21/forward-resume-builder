@@ -13,6 +13,7 @@ from database import User
 from db_service import ResumeService
 from routes.auth import get_current_user
 from utils.rate_limiter import rate_limit_ip, rate_limit_user
+from utils.redis_cache import cache, cache_user_data
 from openai_service import openai_service
 from file_parser import file_parser
 
@@ -44,31 +45,60 @@ async def create_resume(
 
 @router.get("", response_model=ResumeListResponse, dependencies=[Depends(rate_limit_user(300, 60))])
 async def get_user_resumes(
-    limit: int = 50, 
-    offset: int = 0,
+    page: int = 1,
+    limit: int = 20, 
     current_user: User = Depends(get_current_user)
 ):
     """Get paginated resumes for the current user."""
     try:
+        # Validate pagination parameters
+        if page < 1:
+            page = 1
+        if limit < 1 or limit > 100:
+            limit = 20
+        
+        offset = (page - 1) * limit
+        
+        # Try to get from cache first
+        cache_key = f"user:{current_user.id}:resumes:{page}:{limit}"
+        cached_result = await cache.get(cache_key)
+        if cached_result:
+            return ResumeListResponse(**cached_result)
+        
+        # Fetch from database
         resumes = await ResumeService.get_user_resumes(str(current_user.id), limit, offset)
         total_count = await ResumeService.get_user_resume_count(str(current_user.id))
         
-        resume_items = [
-            ResumeListItem(
+        # Calculate pagination info
+        total_pages = (total_count + limit - 1) // limit
+        has_next = page < total_pages
+        has_previous = page > 1
+        
+        resume_items = []
+        for resume in resumes:
+            resume_items.append(ResumeListItem(
                 id=str(resume.id),
                 title=resume.title,
                 is_default=resume.is_default,
                 template_id=resume.template_id,
                 created_at=resume.created_at,
                 updated_at=resume.updated_at
-            )
-            for resume in resumes
-        ]
+            ))
         
-        return ResumeListResponse(
+        result = ResumeListResponse(
             resumes=resume_items,
-            total_count=total_count
+            total_count=total_count,
+            page=page,
+            limit=limit,
+            total_pages=total_pages,
+            has_next=has_next,
+            has_previous=has_previous
         )
+        
+        # Cache the result
+        await cache.set(cache_key, result.dict(), ttl=1800)  # 30 minutes
+        
+        return result
     except Exception as e:
         logger.error(f"Error fetching resumes for user {current_user.id}: {e}")
         raise HTTPException(status_code=500, detail="Error fetching resumes")
@@ -79,18 +109,35 @@ async def get_my_resume(
 ):
     """Get the authenticated user's most recently updated resume."""
     try:
+        # Try to get from cache first
+        cache_key = f"user:{current_user.id}:my_resume"
+        cached_result = await cache.get(cache_key)
+        if cached_result:
+            return ResumeResponse(**cached_result)
+        
+        # Fetch from database
         resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
         if not resumes:
             raise HTTPException(status_code=404, detail="Resume not found")
         
         resume = resumes[0]
-        return ResumeResponse(
+        # Convert skills to proper format for caching
+        skills_data = []
+        for skill in resume.skills:
+            skills_data.append({
+                'name': skill.name,
+                'category_id': skill.category_id,
+                'category': skill.category,
+                'level': skill.level.value if hasattr(skill.level, 'value') else str(skill.level)
+            })
+        
+        result = ResumeResponse(
             id=str(resume.id),
             title=resume.title,
             is_default=resume.is_default,
             personal_info=resume.personal_info.dict(),
             professional_summary=resume.professional_summary,
-            skills=resume.skills,
+            skills=skills_data,
             experience=[exp.dict() for exp in resume.experience],
             education=[edu.dict() for edu in resume.education],
             projects=[proj.dict() for proj in resume.projects],
@@ -101,6 +148,11 @@ async def get_my_resume(
             created_at=resume.created_at,
             updated_at=resume.updated_at
         )
+        
+        # Cache the result
+        await cache.set(cache_key, result.dict(), ttl=1800)  # 30 minutes
+        
+        return result
     except HTTPException:
         raise
     except Exception as e:
@@ -159,6 +211,9 @@ async def update_my_resume(
             updates=resume_data.dict(exclude_unset=True)
         )
         
+        # Clear user cache after update
+        await cache.clear_user_cache(str(current_user.id))
+        
         return ResumeResponse(
             id=str(updated_resume.id),
             title=updated_resume.title,
@@ -198,6 +253,9 @@ async def update_resume(
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         
+        # Clear user cache after update
+        await cache.clear_user_cache(str(current_user.id))
+        
         return SuccessResponse(
             message="Resume updated successfully",
             data={"updated_at": resume.updated_at}
@@ -218,6 +276,9 @@ async def delete_resume(
         success = await ResumeService.delete_resume(resume_id, str(current_user.id))
         if not success:
             raise HTTPException(status_code=404, detail="Resume not found")
+        
+        # Clear user cache after deletion
+        await cache.clear_user_cache(str(current_user.id))
         
         return SuccessResponse(message="Resume deleted successfully")
     except HTTPException:
