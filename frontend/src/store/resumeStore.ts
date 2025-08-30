@@ -108,21 +108,69 @@ export const useResumeStore = create<ResumeState>()(
     try {
       const myResume = await resumeService.getMyResume();
       set({ resume: myResume });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch user resume:", error);
-      // Fallback to sample data on error
-      set({ resume: sampleResume });
+      
+      // Handle different types of errors
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: unknown } };
+        if (axiosError.response?.status === 401) {
+          // User is not authenticated, this is expected for guest users
+          console.log("User not authenticated, using sample data");
+          set({ resume: sampleResume });
+        } else if (axiosError.response?.status === 404) {
+          // No resume found, create a new one or use sample data
+          console.log("No resume found, using sample data");
+          set({ resume: sampleResume });
+        } else if (axiosError.response?.status && axiosError.response.status >= 500) {
+          // Server error, use sample data as fallback
+          console.error("Server error fetching resume:", axiosError.response?.data);
+          set({ resume: sampleResume });
+        } else {
+          // Other errors, use sample data as fallback
+          console.error("Unexpected error fetching resume:", error);
+          set({ resume: sampleResume });
+        }
+      } else {
+        // Non-HTTP errors, use sample data as fallback
+        console.error("Unexpected error fetching resume:", error);
+        set({ resume: sampleResume });
+      }
     }
   },
 
-  fetchUserResume: async (_userId: string) => {
+  fetchUserResume: async () => {
         try {
           const myResume = await resumeService.getMyResume();
           set({ resume: myResume });
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("Failed to fetch user resumes:", error);
-          // Fallback to sample data on error as well
-          set({ resume: sampleResume });
+          
+          // Handle different types of errors
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number; data?: unknown } };
+            if (axiosError.response?.status === 401) {
+              // User is not authenticated, this is expected for guest users
+              console.log("User not authenticated, using sample data");
+              set({ resume: sampleResume });
+            } else if (axiosError.response?.status === 404) {
+              // No resume found, create a new one or use sample data
+              console.log("No resume found, using sample data");
+              set({ resume: sampleResume });
+            } else if (axiosError.response?.status && axiosError.response.status >= 500) {
+              // Server error, use sample data as fallback
+              console.error("Server error fetching resume:", axiosError.response?.data);
+              set({ resume: sampleResume });
+            } else {
+              // Other errors, use sample data as fallback
+              console.error("Unexpected error fetching resume:", error);
+              set({ resume: sampleResume });
+            }
+          } else {
+            // Non-HTTP errors, use sample data as fallback
+            console.error("Unexpected error fetching resume:", error);
+            set({ resume: sampleResume });
+          }
         }
       },
     })
