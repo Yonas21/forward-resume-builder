@@ -2,6 +2,9 @@ import { type AxiosResponse } from 'axios';
 import type { Resume } from '../types';
 import apiClient from './apiClient';
 
+// Import the mapping function from apiService
+import { mapSkillsFromBackend } from './api';
+
 interface ResumeListResponse {
   resumes: Resume[];
   total_count: number;
@@ -17,7 +20,11 @@ class ResumeService {
     const response: AxiosResponse<Resume> = await apiClient.get(
       `/resumes/my-resume`
     );
-    return response.data;
+    // Apply skill mapping to convert string skills to Skill objects
+    return {
+      ...response.data,
+      skills: mapSkillsFromBackend(response.data.skills),
+    };
   }
 
   async getUserResumes(page: number = 1, limit: number = 20): Promise<ResumeListResponse> {
@@ -25,7 +32,14 @@ class ResumeService {
       `/resumes`,
       { params: { page, limit } }
     );
-    return response.data;
+    // Apply skill mapping to each resume in the list
+    return {
+      ...response.data,
+      resumes: response.data.resumes.map(resume => ({
+        ...resume,
+        skills: mapSkillsFromBackend(resume.skills),
+      })),
+    };
   }
 
   async generateCoverLetter(resume: Resume, jobDescription: { title: string, company: string, description: string, requirements: string[] }): Promise<{ cover_letter: string }> {
@@ -41,7 +55,11 @@ class ResumeService {
       `/resumes/my-resume`,
       resume
     );
-    return response.data;
+    // Apply skill mapping to the updated resume
+    return {
+      ...response.data,
+      skills: mapSkillsFromBackend(response.data.skills),
+    };
   }
 
   async scoreResume(resume: Resume, jobDescription?: string): Promise<{ score: number; feedback: string[]; suggestions: string[] }> {
