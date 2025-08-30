@@ -3,11 +3,65 @@ import type { Resume, OptimizeResumeRequest, GenerateResumeRequest, Skill } from
 import type { SignupRequest, LoginRequest, AuthResponse } from '../types/auth';
 
 // Helpers to map between backend <-> frontend skill shapes
-const mapSkillsFromBackend = (skills: unknown): Skill[] => {
+export const mapSkillsFromBackend = (skills: unknown): Skill[] => {
   if (!Array.isArray(skills)) return [];
+  
+  const categorizeSkill = (skillName: string): { category_id: string; category: string; level: 'beginner' | 'intermediate' | 'advanced' | 'expert' } => {
+    const name = skillName.toLowerCase();
+    
+    // Programming Languages
+    if (['javascript', 'typescript', 'python', 'go', 'php', 'java', 'c++', 'c#', 'ruby', 'swift', 'kotlin', 'rust', 'scala'].includes(name)) {
+      return { category_id: 'programming', category: 'Programming Languages', level: 'intermediate' };
+    }
+    
+    // Frameworks & Libraries
+    if (['react', 'vue.js', 'angular', 'next.js', 'nuxt.js', 'django', 'fastapi', 'express', 'spring', 'laravel', 'rails', 'flask', 'node.js'].includes(name)) {
+      return { category_id: 'frameworks', category: 'Frameworks & Libraries', level: 'intermediate' };
+    }
+    
+    // Frontend Technologies
+    if (['html5', 'css3', 'tailwind css', 'material-ui', 'bootstrap', 'sass', 'less', 'styled-components', 'radix ui'].includes(name)) {
+      return { category_id: 'frontend', category: 'Frontend Technologies', level: 'intermediate' };
+    }
+    
+    // Backend & APIs
+    if (['rest', 'graphql', 'trpc', 'grpc', 'soap', 'websockets'].includes(name)) {
+      return { category_id: 'backend', category: 'Backend & APIs', level: 'intermediate' };
+    }
+    
+    // Databases
+    if (['postgresql', 'mysql', 'mongodb', 'redis', 'elasticsearch', 'dynamodb', 'firebase', 'sqlalchemy'].includes(name)) {
+      return { category_id: 'databases', category: 'Databases', level: 'intermediate' };
+    }
+    
+    // Cloud & DevOps
+    if (['aws', 'gcp', 'azure', 'docker', 'kubernetes', 'terraform', 'jenkins', 'github actions', 'ci/cd', 'prometheus'].includes(name)) {
+      return { category_id: 'devops', category: 'Cloud & DevOps', level: 'intermediate' };
+    }
+    
+    // Tools & Platforms
+    if (['git', 'github', 'gitlab', 'bitbucket', 'slack', 'notion', 'jira', 'zoom', 'clickup', 'datadog', 'swr'].includes(name)) {
+      return { category_id: 'tools', category: 'Tools & Platforms', level: 'intermediate' };
+    }
+    
+    // Methodologies & Practices
+    if (['agile', 'scrum', 'tdd', 'code reviews', 'debugging', 'remote collaboration', 'pair programming'].includes(name)) {
+      return { category_id: 'methodologies', category: 'Methodologies & Practices', level: 'intermediate' };
+    }
+    
+    // Default fallback
+    return { category_id: 'programming', category: 'Programming Languages', level: 'intermediate' };
+  };
+  
   return skills.map((s) => {
     if (typeof s === 'string') {
-      return { name: s, category_id: 'programming', category: 'Programming Languages', level: 'intermediate' as const };
+      const category = categorizeSkill(s);
+      return { 
+        name: s, 
+        category_id: category.category_id, 
+        category: category.category, 
+        level: category.level
+      };
     }
     return s as Skill; // assume already proper shape
   });
@@ -26,12 +80,7 @@ const mapResumeToBackend = (resume: Resume) => {
     skills: Array.isArray(resume.skills) 
       ? resume.skills
           .filter((s) => s && s.name && s.name.trim() !== '') // Filter out null/empty skills
-          .map((s) => ({
-            name: s.name,
-            category_id: s.category_id || 'programming',
-            category: s.category || 'Programming Languages',
-            level: s.level || 'intermediate'
-          })) 
+          .map((s) => s.name) // Convert Skill objects to strings for backend
       : [],
   };
 };
