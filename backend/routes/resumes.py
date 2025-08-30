@@ -124,12 +124,21 @@ async def get_my_resume(
         # Convert skills to proper format for caching
         skills_data = []
         for skill in resume.skills:
-            skills_data.append({
-                'name': skill.name,
-                'category_id': skill.category_id,
-                'category': skill.category,
-                'level': skill.level.value if hasattr(skill.level, 'value') else str(skill.level)
-            })
+            # Skills are stored as strings, not objects
+            if isinstance(skill, str):
+                skills_data.append(skill)
+            else:
+                # Handle legacy skill objects if they exist
+                try:
+                    skills_data.append({
+                        'name': skill.name,
+                        'category_id': skill.category_id,
+                        'category': skill.category,
+                        'level': skill.level.value if hasattr(skill.level, 'value') else str(skill.level)
+                    })
+                except AttributeError:
+                    # Fallback to string representation
+                    skills_data.append(str(skill))
         
         result = ResumeResponse(
             id=str(resume.id),
