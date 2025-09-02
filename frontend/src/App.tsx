@@ -16,6 +16,7 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 import PasswordReset from './components/PasswordReset';
 import CoverLetter from './pages/CoverLetter';
+import JobSearch from './pages/JobSearch';
 import { useAuthStore } from './store/authStore';
 
 function App() {
@@ -90,6 +91,13 @@ function App() {
             <ProtectedRoute>
               <main id="main">
                 <CoverLetter />
+              </main>
+            </ProtectedRoute>
+          } />
+          <Route path="/jobs" element={
+            <ProtectedRoute>
+              <main id="main">
+                <JobSearch />
               </main>
             </ProtectedRoute>
           } />
