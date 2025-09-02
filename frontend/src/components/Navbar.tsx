@@ -121,6 +121,17 @@ const Navbar: React.FC = () => {
                   >
                     Preview
                   </Link>
+                  <Link
+                    to="/jobs"
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive('/jobs')
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                    aria-current={isActive('/jobs') ? 'page' : undefined}
+                  >
+                    Job Search
+                  </Link>
                 </>
               )}
             </div>
@@ -266,6 +277,16 @@ const Navbar: React.FC = () => {
                   }`}
                 >
                   Preview
+                </Link>
+                <Link
+                  to="/jobs"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive('/jobs')
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Job Search
                 </Link>
                 <div className="border-t pt-4 pb-3">
                   <div className="flex items-center px-5">
