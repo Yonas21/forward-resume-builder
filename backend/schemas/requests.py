@@ -91,3 +91,23 @@ class ResumeScoreRequest(BaseModel):
     """Resume scoring request model."""
     resume: Dict[str, Any]
     job_description: Optional[str] = None
+
+
+class JobSearchRequest(BaseModel):
+    skills: List[str] = Field(..., description="List of skills to search for")
+    location: Optional[str] = Field(None, description="Preferred location")
+    remote: bool = Field(True, description="Include remote jobs")
+    limit: int = Field(50, ge=1, le=100, description="Maximum number of jobs to return")
+    min_salary: Optional[int] = Field(None, ge=0, description="Minimum salary requirement")
+    max_salary: Optional[int] = Field(None, ge=0, description="Maximum salary requirement")
+    job_type: Optional[str] = Field(None, description="Type of job (Full-time, Part-time, etc.)")
+    experience_level: Optional[str] = Field(None, description="Experience level required")
+
+class JobFilterRequest(BaseModel):
+    location: Optional[str] = Field(None, description="Preferred location")
+    remote: bool = Field(True, description="Include remote jobs")
+    limit: int = Field(50, ge=1, le=100, description="Maximum number of jobs to return")
+    min_salary: Optional[int] = Field(None, ge=0, description="Minimum salary requirement")
+    max_salary: Optional[int] = Field(None, ge=0, description="Maximum salary requirement")
+    job_type: Optional[str] = Field(None, description="Type of job (Full-time, Part-time, etc.)")
+    experience_level: Optional[str] = Field(None, description="Experience level required")
