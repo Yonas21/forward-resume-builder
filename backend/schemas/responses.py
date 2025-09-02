@@ -112,3 +112,39 @@ class OptimizedResumeResponse(BaseModel):
     education: List[Dict[str, Any]]
     projects: List[Dict[str, Any]]
     certifications: List[Dict[str, Any]]
+
+class JobPostingResponse(BaseModel):
+    id: str
+    title: str
+    company: str
+    location: str
+    description: str
+    requirements: List[str]
+    skills: List[str]
+    salary_range: Optional[str]
+    job_type: str
+    experience_level: str
+    posted_date: datetime
+    application_url: str
+    source: str
+    remote: bool
+    match_score: Optional[float]
+
+class JobSearchResponse(BaseModel):
+    jobs: List[JobPostingResponse]
+    total_count: int
+    filters_applied: Dict[str, Any]
+
+class JobMatchAnalysis(BaseModel):
+    job_id: str
+    overall_match: float
+    skill_matches: List[str]
+    missing_skills: List[str]
+    recommendations: List[str]
+    match_breakdown: Dict[str, float]
+
+class JobSource(BaseModel):
+    name: str
+    description: str
+    url: str
+    active: bool
