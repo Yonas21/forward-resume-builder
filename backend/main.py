@@ -21,6 +21,7 @@ from routes.auth import router as auth_router
 from routes.resumes import router as resume_router
 from routes.health import router as health_router
 from routes.templates import router as templates_router
+from routes.jobs import router as jobs_router
 
 # Configure logging
 logging.basicConfig(
@@ -82,6 +83,7 @@ app.include_router(auth_router)
 app.include_router(resume_router)
 app.include_router(health_router)
 app.include_router(templates_router)
+app.include_router(jobs_router)
 
 # Root endpoint
 @app.get("/")
