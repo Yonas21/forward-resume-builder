@@ -35,7 +35,7 @@ jobs:
         lhci autorun --upload.target=temporary-public-storage
         
     - name: Upload Lighthouse results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: lighthouse-results
@@ -90,7 +90,7 @@ jobs:
                --html load-test-report.html --csv load-test-results
 
     - name: Upload load test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: load-test-results
@@ -167,7 +167,7 @@ jobs:
         k6 run --out json=api-performance-results.json api-performance-test.js
 
     - name: Upload API performance results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: api-performance-results
@@ -182,7 +182,7 @@ jobs:
     
     steps:
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Check performance budgets
       run: |
@@ -217,7 +217,7 @@ jobs:
         EOF
 
     - name: Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-report
         path: performance-report.md

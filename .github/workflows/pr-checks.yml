@@ -235,7 +235,7 @@ jobs:
       id: license_check
 
     - name: Upload license report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: license-report
         path: frontend/licenses.json
@@ -271,7 +271,7 @@ jobs:
         npx @axe-core/cli dist/ --tags wcag2a,wcag2aa --reporter json --output-file axe-report.json || true
 
     - name: Upload accessibility report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: accessibility-report

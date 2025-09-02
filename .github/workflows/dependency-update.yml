@@ -114,7 +114,7 @@ jobs:
         npm audit --audit-level=moderate
 
     - name: Upload security audit results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-audit-results
