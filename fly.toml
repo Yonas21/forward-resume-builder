@@ -1,0 +1,26 @@
+# Fly.io configuration for Resume Builder
+app = "resume-builder"
+primary_region = "sjc"
+
+[build]
+
+[env]
+  ENVIRONMENT = "production"
+  DEBUG = "false"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+[[statics]]
+  guest_path = "/app/frontend/dist"
+  url_prefix = "/"

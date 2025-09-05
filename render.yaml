@@ -1,0 +1,54 @@
+# Render.com deployment configuration
+services:
+  # Backend API
+  - type: web
+    name: resume-builder-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: MONGODB_URL
+        fromDatabase:
+          name: resume-builder-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: resume-builder-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_ORIGINS
+        value: https://resume-builder-frontend.onrender.com
+    healthCheckPath: /health
+
+  # Frontend
+  - type: web
+    name: resume-builder-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://resume-builder-backend.onrender.com
+
+  # Database
+  - type: pserv
+    name: resume-builder-db
+    env: mongodb
+    plan: free
+    region: oregon
+
+  # Redis Cache
+  - type: redis
+    name: resume-builder-redis
+    plan: free
+    region: oregon
