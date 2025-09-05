@@ -8,6 +8,7 @@ from models import User
 from routes.auth import get_current_user
 from utils.rate_limiter import rate_limit_user
 from job_scraper import job_scraper_service
+from db_service import ResumeService
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -117,10 +118,22 @@ async def search_jobs_by_resume(
     """Search for jobs using skills from the authenticated user's resume"""
     try:
         # Get user's resume skills
-        if not current_user.resume or not current_user.resume.skills:
+        resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
+        if not resumes:
+            raise HTTPException(status_code=400, detail="No resume found for user")
+        
+        resume = resumes[0]
+        if not resume.skills:
             raise HTTPException(status_code=400, detail="No skills found in user's resume")
         
-        skills = current_user.resume.skills
+        # Extract skill names from the skills list
+        skills = []
+        for skill in resume.skills:
+            if isinstance(skill, str):
+                skills.append(skill)
+            else:
+                # Handle skill objects
+                skills.append(skill.name if hasattr(skill, 'name') else str(skill))
         
         filters = {
             'limit': limit,
@@ -159,10 +172,23 @@ async def search_jobs_by_resume(
 async def analyze_job_match(job_id: str, current_user: User = Depends(get_current_user)):
     """Analyze how well a specific job matches the user's resume"""
     try:
-        if not current_user.resume or not current_user.resume.skills:
+        # Get user's resume skills
+        resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
+        if not resumes:
+            raise HTTPException(status_code=400, detail="No resume found for user")
+        
+        resume = resumes[0]
+        if not resume.skills:
             raise HTTPException(status_code=400, detail="No skills found in user's resume")
         
-        user_skills = current_user.resume.skills
+        # Extract skill names from the skills list
+        user_skills = []
+        for skill in resume.skills:
+            if isinstance(skill, str):
+                user_skills.append(skill)
+            else:
+                # Handle skill objects
+                user_skills.append(skill.name if hasattr(skill, 'name') else str(skill))
         
         # Mock analysis - in a real implementation, you'd fetch the job details
         # and perform a detailed analysis
