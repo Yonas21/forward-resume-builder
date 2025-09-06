@@ -1,15 +1,58 @@
-backend/
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build artifacts
+frontend/dist/
+dist/
+
+# Development files
+*.log
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+# Documentation
+*.md
 docs/
+
+# Backend files (not needed for frontend deployment)
+backend/
 scripts/
 nginx/
-*.md
-docker-compose*.yml
-Dockerfile*
-Makefile
-Procfile
-railway.json
-render.yaml
-fly.toml
-requirements.txt
-runtime.txt
-start.sh
+
+# Test files
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# Environment files
+.env*
+!.env.example
+
+# Lock files (keep package-lock.json for faster installs)
+yarn.lock
+pnpm-lock.yaml

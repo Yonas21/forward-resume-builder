@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
+    "build": "cd frontend && npm ci --prefer-offline --no-audit && npm run build",
+    "build:vercel": "cd frontend && npm ci --prefer-offline --no-audit --silent && npm run build:prod",
     "dev": "cd frontend && npm run dev",
-    "install": "cd frontend && npm install"
+    "install": "cd frontend && npm ci --prefer-offline --no-audit"
   },
   "workspaces": [
     "frontend"
