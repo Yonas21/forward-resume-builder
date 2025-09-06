@@ -59,6 +59,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:5174",
+        "https://forward-resume-builder.web.app",  # Firebase frontend
+        "https://forward-resume-builder.vercel.app",  # Vercel frontend
     ]
     
     # Logging
