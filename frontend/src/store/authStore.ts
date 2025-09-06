@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
               const currentUser = await authService.getCurrentUser();
               set({ user: currentUser, isLoading: false });
               // Fetch user's resume after successful authentication
-              useResumeStore.getState().fetchUserResume();
+              useResumeStore.getState().fetchUserResume(userData.id);
             } catch (error) {
               console.error('Token validation failed:', error);
               // Clear invalid token
@@ -92,7 +92,7 @@ export const useAuthStore = create<AuthState>()(
           });
           
           // Fetch user's resume after successful authentication
-          useResumeStore.getState().fetchUserResume();
+          useResumeStore.getState().fetchUserResume(authData.user.id);
         } catch (error: unknown) {
           if (error instanceof Error) {
             set({ error: error.message, isLoading: false });
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthState>()(
           error: null, // Clear any previous errors on successful auth
         });
         // Fetch user's resume after successful authentication
-        useResumeStore.getState().fetchUserResume();
+        useResumeStore.getState().fetchUserResume(authData.user.id);
       },
 
       continueAsGuest: () => {

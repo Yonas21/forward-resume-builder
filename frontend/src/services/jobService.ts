@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Resume } from '../types';
+import type { Resume } from '../types';
 
 export interface JobPosting {
   id: string;

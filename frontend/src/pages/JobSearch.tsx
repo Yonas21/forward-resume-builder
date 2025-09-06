@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useResumeStore } from '../store/resumeStore';
 import { jobService } from '../services/jobService';
-import type { JobPosting, JobSearchRequest } from '../services/jobService';
+import type { JobPosting } from '../services/jobService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { ErrorDisplay } from '../components/ErrorDisplay';
-import { MagnifyingGlassIcon, FunnelIcon, MapPinIcon, BriefcaseIcon, CurrencyDollarIcon, CalendarIcon, StarIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, MapPinIcon, BriefcaseIcon, CurrencyDollarIcon, StarIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BuildingOfficeIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 interface JobFilters {
   location: string;
@@ -17,7 +16,7 @@ interface JobFilters {
 }
 
 const JobSearch: React.FC = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const { resume } = useResumeStore();
   
   const [jobs, setJobs] = useState<JobPosting[]>([]);
@@ -204,12 +203,6 @@ const JobSearch: React.FC = () => {
     return 'text-red-600 bg-red-100';
   };
 
-  const getMatchScoreLabel = (score: number) => {
-    if (score >= 80) return 'Excellent Match';
-    if (score >= 60) return 'Good Match';
-    if (score >= 40) return 'Fair Match';
-    return 'Poor Match';
-  };
 
   if (!isAuthenticated) {
     return (
