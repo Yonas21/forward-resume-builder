@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm ci --prefer-offline --no-audit --silent && npm run build:prod",
+  "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm ci --prefer-offline --no-audit",
+  "installCommand": "npm ci --prefer-offline --no-audit",
   "framework": null,
   "functions": {
     "frontend/dist/**": {
