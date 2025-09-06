@@ -107,9 +107,33 @@ export const useFormValidation = (rules: ValidationRules) => {
     return !errors[fieldName];
   }, [errors]);
 
-  const isFormValid = useCallback(() => {
+  const isFormValid = useCallback((formData?: any) => {
+    // If formData is provided, validate all fields without updating state
+    if (formData) {
+      // Check if all required fields have values and validate them
+      for (const [fieldName, rule] of Object.entries(rules)) {
+        const value = formData[fieldName];
+        
+        // Check if required field is empty
+        if (rule.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
+          return false;
+        }
+        
+        // If field has value, validate it
+        if (value && (typeof value === 'string' && value.trim() !== '')) {
+          const error = validateField(fieldName, value);
+          if (error) {
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    }
+    
+    // Fallback: check existing errors
     return Object.keys(errors).length === 0;
-  }, [errors]);
+  }, [errors, rules, validateField]);
 
   const getFieldError = useCallback((fieldName: string) => {
     return touched[fieldName] ? errors[fieldName] : null;
