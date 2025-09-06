@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:vercel",
+  "buildCommand": "cd frontend && npm ci --prefer-offline --no-audit --silent && npm run build:prod",
   "outputDirectory": "frontend/dist",
-  "installCommand": "npm ci --prefer-offline --no-audit",
+  "installCommand": "cd frontend && npm ci --prefer-offline --no-audit",
   "framework": null,
   "functions": {
     "frontend/dist/**": {
