@@ -1,0 +1,15 @@
+backend/
+docs/
+scripts/
+nginx/
+*.md
+docker-compose*.yml
+Dockerfile*
+Makefile
+Procfile
+railway.json
+render.yaml
+fly.toml
+requirements.txt
+runtime.txt
+start.sh
