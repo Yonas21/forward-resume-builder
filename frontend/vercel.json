@@ -4,11 +4,6 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci --prefer-offline --no-audit",
   "framework": null,
-  "functions": {
-    "dist/**": {
-      "maxDuration": 30
-    }
-  },
   "build": {
     "env": {
       "NODE_ENV": "production",
