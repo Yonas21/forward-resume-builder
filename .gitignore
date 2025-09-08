@@ -21,3 +21,5 @@ backend/schemas/__pycache__/
 backend/utils/__pycache__/
 FREE_DEPLOYMENT.md
 DEPLOYMENT.md
+frontend/.env.development
+frontend/.env.production

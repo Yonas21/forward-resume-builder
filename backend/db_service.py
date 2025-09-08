@@ -1,5 +1,5 @@
 from database import User, Resume, ResumeVersion, PersonalInfo
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 from bson import ObjectId
 import bcrypt
@@ -95,15 +95,20 @@ class ResumeService:
     async def create_resume(
         user_id: str, 
         title: str = "My Resume",
-        resume_data: Dict[str, Any] = None
+        resume_data: Union[Dict[str, Any], 'Resume'] = None
     ) -> Resume:
         """Create a new resume for a user"""
         try:
             if resume_data is None:
                 resume_data = {}
             
-            # Clean the resume_data to remove None values
-            cleaned_data = clean_resume_data(resume_data)
+            # Handle case where resume_data is already a Resume object
+            if hasattr(resume_data, 'model_dump'):
+                # It's a Resume object, convert to dict
+                cleaned_data = resume_data.model_dump()
+            else:
+                # It's a dictionary, clean it
+                cleaned_data = clean_resume_data(resume_data)
 
             # Convert personal_info dict to PersonalInfo object if needed
             personal_info_data = cleaned_data.get('personal_info', {})
