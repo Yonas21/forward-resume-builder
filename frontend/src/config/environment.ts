@@ -12,32 +12,27 @@ export const ENVIRONMENT_CONFIG = {
   CUSTOM_API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
 };
 
-// Determine if we're in development mode based on multiple indicators
-const isDevelopment = 
-  import.meta.env.DEV || 
-  import.meta.env.MODE === 'development' ||
-  import.meta.env.NODE_ENV === 'development' ||
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1' ||
-  window.location.port === '5173' ||
-  window.location.port === '3000';
-
 // Get the API URL based on the current environment
 export const getApiUrl = (): string => {
-  // ALWAYS use localhost for local development - multiple fallback mechanisms
-  if (isDevelopment) {
-    console.log('🔧 Development mode detected, forcing localhost:8000');
-    return 'http://localhost:8000';
-  }
-  
-  // Check if we're running on localhost (additional safety check)
+  // Check if we're running on localhost (development)
   if (typeof window !== 'undefined' && 
       (window.location.hostname === 'localhost' || 
        window.location.hostname === '127.0.0.1' ||
        window.location.port === '5173' ||
        window.location.port === '3000')) {
-    console.log('🔧 Localhost detected, forcing localhost:8000');
-    return 'http://localhost:8000';
+    console.log('🔧 Localhost detected, using development API:', ENVIRONMENT_CONFIG.DEVELOPMENT_API_URL);
+    return ENVIRONMENT_CONFIG.DEVELOPMENT_API_URL;
+  }
+  
+  // Check if we're running on HTTPS (production)
+  if (typeof window !== 'undefined' && 
+      (window.location.protocol === 'https:' || 
+       window.location.hostname.includes('railway.app') ||
+       window.location.hostname.includes('vercel.app') ||
+       window.location.hostname.includes('netlify.app') ||
+       window.location.hostname.includes('github.io'))) {
+    console.log('🔧 Production environment detected, using production API:', ENVIRONMENT_CONFIG.PRODUCTION_API_URL);
+    return ENVIRONMENT_CONFIG.PRODUCTION_API_URL;
   }
   
   // If custom API URL is provided via environment variable, use it
@@ -46,20 +41,22 @@ export const getApiUrl = (): string => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // Use production URL for production
-  const selectedUrl = ENVIRONMENT_CONFIG.PRODUCTION_API_URL;
-  console.log('🔧 Selected API URL:', selectedUrl, '(isDevelopment:', isDevelopment, ')');
+  // Fallback: Use production URL for production builds, development for dev builds
+  const isProductionBuild = import.meta.env.PROD;
+  const selectedUrl = isProductionBuild ? ENVIRONMENT_CONFIG.PRODUCTION_API_URL : ENVIRONMENT_CONFIG.DEVELOPMENT_API_URL;
+  console.log('🔧 Fallback selection - isProductionBuild:', isProductionBuild, 'selectedUrl:', selectedUrl);
   return selectedUrl;
 };
 
 // Log the current configuration
 console.log('🔧 Environment Config:', {
-  isDevelopment,
   isProduction: import.meta.env.PROD,
   mode: import.meta.env.MODE,
   apiUrl: getApiUrl(),
   customApiUrl: import.meta.env.VITE_API_URL || 'not set',
-  selectedUrl: isDevelopment ? 'development' : 'production',
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'server-side',
+  protocol: typeof window !== 'undefined' ? window.location.protocol : 'server-side',
+  port: typeof window !== 'undefined' ? window.location.port : 'server-side',
   dev: import.meta.env.DEV,
   allEnvVars: {
     VITE_API_URL: import.meta.env.VITE_API_URL,
