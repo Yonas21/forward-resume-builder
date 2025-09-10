@@ -65,8 +65,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ setIsLoading }) => {
     setIsLoading(true);
     try {
       const parsedResume = await apiService.parseAndSaveResume(selectedFile);
+      console.log('Parsed resume from API:', parsedResume);
+      console.log('Skills in parsed resume:', parsedResume.skills);
       // Persist parsed resume into the central store
       setResume(parsedResume);
+      console.log('Resume set in store, navigating to builder...');
       navigate('/builder');
     } catch (error: any) {
       console.error('Error parsing resume:', error);

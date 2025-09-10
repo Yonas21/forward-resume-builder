@@ -148,11 +148,15 @@ class OpenAIService:
                 content = content[:-3]
             
             parsed_data = json.loads(content)
+            print(f"AI parsed data: {parsed_data}")
+            print(f"Projects in parsed data: {parsed_data.get('projects', [])}")
             return Resume(**parsed_data)
             
         except Exception as e:
             # Consider raising a typed error for upstream handling
             print(f"Error parsing resume: {e}")
+            import traceback
+            traceback.print_exc()
             return Resume()
     
     @cache_ai_response(ttl=7200)  # Cache AI responses for 2 hours

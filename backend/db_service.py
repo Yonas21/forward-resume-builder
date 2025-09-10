@@ -88,6 +88,49 @@ def clean_resume_data(data: Any) -> Any:
         return [clean_resume_data(item) for item in data]
     return data
 
+def convert_skills_for_database(skills: Any) -> List[str]:
+    """Convert skills from various formats to List[str] for database storage"""
+    if not skills:
+        return []
+    
+    if isinstance(skills, list):
+        if not skills:
+            return []
+        
+        # If it's a list of strings, return as is
+        if isinstance(skills[0], str):
+            return skills
+        
+        # If it's a list of Skill objects or dicts, extract names
+        if isinstance(skills[0], dict):
+            return [skill.get('name', '') for skill in skills if skill and skill.get('name')]
+        
+        # If it's a list of Skill objects (from models.py)
+        if hasattr(skills[0], 'name'):
+            return [skill.name for skill in skills if skill and skill.name]
+    
+    return []
+
+def convert_dates_for_database(data: Any) -> Any:
+    """Convert date objects to strings for database storage"""
+    if isinstance(data, dict):
+        converted = {}
+        for key, value in data.items():
+            if key in ['start_date', 'end_date', 'issue_date', 'expiration_date']:
+                if value is None:
+                    converted[key] = ""
+                elif hasattr(value, 'isoformat'):  # date or datetime object
+                    converted[key] = value.isoformat()
+                else:
+                    converted[key] = str(value) if value else ""
+            else:
+                converted[key] = convert_dates_for_database(value)
+        return converted
+    elif isinstance(data, list):
+        return [convert_dates_for_database(item) for item in data]
+    else:
+        return data
+
 class ResumeService:
     """Service class for resume-related database operations"""
     
@@ -109,6 +152,9 @@ class ResumeService:
             else:
                 # It's a dictionary, clean it
                 cleaned_data = clean_resume_data(resume_data)
+            
+            # Convert dates to strings for database storage
+            cleaned_data = convert_dates_for_database(cleaned_data)
 
             # Convert personal_info dict to PersonalInfo object if needed
             personal_info_data = cleaned_data.get('personal_info', {})
@@ -122,7 +168,7 @@ class ResumeService:
                 title=title,
                 personal_info=personal_info,
                 professional_summary=cleaned_data.get('professional_summary', ''),
-                skills=cleaned_data.get('skills', []),
+                skills=convert_skills_for_database(cleaned_data.get('skills', [])),
                 experience=cleaned_data.get('experience', []),
                 education=cleaned_data.get('education', []),
                 projects=cleaned_data.get('projects', []),

@@ -169,7 +169,7 @@ async def init_database(retry_count: int = 5, retry_delay: int = 5):
             return True
             
         except Exception as e:
-            logger.warning(f"Database connection attempt {attempt + 1} failed: {e}")
+            logger.error(f"Database connection attempt {attempt + 1} failed: {e}")
             if attempt < retry_count - 1:
                 logger.info(f"Retrying in {retry_delay} seconds...")
                 await asyncio.sleep(retry_delay)
@@ -191,6 +191,7 @@ async def check_database_connection() -> bool:
     try:
         global mongodb_client
         if not mongodb_client:
+            logger.error("MongoDB client not initialized")
             return False
             
         # Simple ping to test connection
@@ -198,7 +199,7 @@ async def check_database_connection() -> bool:
         return True
         
     except Exception as e:
-        logger.error(f"Database connection failed: {e}")
+        logger.error(f"Database connection check failed: {e}")
         return False
 
 # Health check function for startup

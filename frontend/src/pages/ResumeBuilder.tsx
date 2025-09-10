@@ -126,8 +126,16 @@ const ResumeBuilder: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchMyResume();
-  }, [fetchMyResume]);
+    console.log('ResumeBuilder mounted, current resume:', resume);
+    console.log('Resume skills:', resume?.skills);
+    // Only fetch if we don't already have resume data
+    if (!resume || !resume.personal_info?.full_name) {
+      console.log('No resume data, fetching...');
+      fetchMyResume();
+    } else {
+      console.log('Resume data already available, skipping fetch');
+    }
+  }, [fetchMyResume, resume]);
 
   const [font, setFont] = useState('font-sans');
   const [color, setColor] = useState('#2563eb');

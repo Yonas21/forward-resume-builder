@@ -379,22 +379,22 @@ async def parse_and_save_resume(
             raise HTTPException(status_code=400, detail="File too large. Max size is 10MB.")
 
         resume_text = file_parser.parse_file(file.filename, file_content)
-        
+
         if not resume_text:
             raise HTTPException(status_code=400, detail="Failed to parse the uploaded file")
-        
+
         pre_processed_data = file_parser.pre_process_resume(resume_text)
         structured_resume = await openai_service.parse_resume(
             resume_text,
             pre_processed_hints=pre_processed_data
         )
-        
+
         resume = await ResumeService.create_resume(
             user_id=str(current_user.id),
             title=f"Resume from {file.filename}",
             resume_data=structured_resume
         )
-        
+
         return ResumeResponse(
             id=str(resume.id),
             title=resume.title,

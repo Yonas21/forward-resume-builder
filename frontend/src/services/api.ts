@@ -108,7 +108,14 @@ export const apiService = {
       },
     });
 
-    return mapResumeFromBackend(response.data);
+    console.log('Raw response from parseAndSaveResume:', response.data);
+    console.log('Skills in raw response:', response.data.skills);
+    
+    const mappedResume = mapResumeFromBackend(response.data);
+    console.log('Mapped resume:', mappedResume);
+    console.log('Mapped skills:', mappedResume.skills);
+    
+    return mappedResume;
   },
 
   // Optimize resume for job description

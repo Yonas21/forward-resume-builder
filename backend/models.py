@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 from typing import List, Optional, Union, Any
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 
 class Education(BaseModel):
@@ -21,6 +21,10 @@ class Education(BaseModel):
                 return date.fromisoformat(v)
             except ValueError:
                 return None
+        if isinstance(v, datetime):
+            return v.date()
+        if isinstance(v, date):
+            return v
         return v
 
 class Experience(BaseModel):
@@ -41,6 +45,10 @@ class Experience(BaseModel):
                 return date.fromisoformat(v)
             except ValueError:
                 return None
+        if isinstance(v, datetime):
+            return v.date()
+        if isinstance(v, date):
+            return v
         return v
 
 class Project(BaseModel):
@@ -48,6 +56,25 @@ class Project(BaseModel):
     description: str
     technologies: List[str] = []
     url: Optional[str] = None
+    
+    @field_validator('description', mode='before')
+    @classmethod
+    def validate_description(cls, v: Any) -> str:
+        if isinstance(v, list):
+            # Join list items with newlines or spaces
+            return '\n'.join(str(item) for item in v if item)
+        if isinstance(v, str):
+            return v
+        return str(v) if v else ""
+    
+    @field_validator('technologies', mode='before')
+    @classmethod
+    def validate_technologies(cls, v: Any) -> List[str]:
+        if isinstance(v, list):
+            return [str(item) for item in v if item]
+        if isinstance(v, str):
+            return [v] if v else []
+        return []
 
 class Certification(BaseModel):
     name: str
@@ -55,6 +82,22 @@ class Certification(BaseModel):
     issue_date: Optional[date] = None
     expiration_date: Optional[date] = None
     credential_id: Optional[str] = None
+    
+    @field_validator('issue_date', 'expiration_date', mode='before')
+    @classmethod
+    def validate_dates(cls, v: Any) -> Optional[date]:
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            try:
+                return date.fromisoformat(v)
+            except ValueError:
+                return None
+        if isinstance(v, datetime):
+            return v.date()
+        if isinstance(v, date):
+            return v
+        return v
 
 class SkillLevel(str, Enum):
     beginner = "beginner"
