@@ -21,7 +21,6 @@ const CategorizedSkillsDisplay: React.FC<CategorizedSkillsDisplayProps> = ({
 
   const getSkillsByCategory = () => {
     const grouped: { [key: string]: Skill[] } = {};
-      console.log('skills', skills);
     skills.forEach(skill => {
       const categoryKey = skill.category_id || skill.category;
       if (!grouped[categoryKey]) {

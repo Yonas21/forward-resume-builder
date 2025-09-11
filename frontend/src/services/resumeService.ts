@@ -51,9 +51,78 @@ class ResumeService {
   }
 
   async updateResume(resume: Resume): Promise<Resume> {
+    // Debug: Log original skills
+    console.log('Original skills:', resume.skills);
+    console.log('First skill type:', typeof resume.skills[0]);
+    console.log('First skill:', resume.skills[0]);
+    
+    // Convert Skill objects to strings and filter out non-updatable fields
+    const convertedSkills = Array.isArray(resume.skills) 
+      ? resume.skills
+          .filter((s: any) => {
+            // Handle different skill formats
+            if (typeof s === 'string') {
+              return s.trim() !== '';
+            }
+            if (s && typeof s === 'object' && s.name) {
+              return typeof s.name === 'string' && s.name.trim() !== '';
+            }
+            return false;
+          })
+          .map((s: any) => {
+            // Convert to string - this is the key part
+            if (typeof s === 'string') {
+              return s;
+            }
+            if (s && typeof s === 'object' && s.name) {
+              return s.name; // Return the name directly as string
+            }
+            return String(s);
+          })
+      : [];
+    
+    console.log('Converted skills:', convertedSkills);
+    console.log('First converted skill type:', typeof convertedSkills[0]);
+    
+    const backendResume = {
+      title: resume.title,
+      personal_info: resume.personal_info,
+      professional_summary: resume.professional_summary,
+      skills: convertedSkills,
+      experience: resume.experience,
+      education: resume.education,
+      projects: resume.projects,
+      certifications: resume.certifications,
+      template_id: resume.template_id,
+      font_family: resume.font_family,
+      accent_color: resume.accent_color,
+    };
+    
+    console.log('Backend resume skills:', backendResume.skills);
+    
+    // Final validation: ensure all skills are strings
+    const validatedSkills = backendResume.skills.map((skill: any) => {
+      if (typeof skill !== 'string') {
+        console.warn('Non-string skill found:', skill, 'converting to string');
+        if (skill && typeof skill === 'object' && skill.name) {
+          return skill.name; // Return name directly
+        }
+        return String(skill);
+      }
+      return skill;
+    });
+    
+    const finalBackendResume = {
+      ...backendResume,
+      skills: validatedSkills
+    };
+    
+    console.log('Final backend resume skills:', finalBackendResume.skills);
+    console.log('Final skills types:', finalBackendResume.skills.map(s => typeof s));
+    
     const response: AxiosResponse<Resume> = await apiClient.put(
       `/resumes/my-resume`,
-      resume
+      finalBackendResume
     );
     // Apply skill mapping to the updated resume
     return {

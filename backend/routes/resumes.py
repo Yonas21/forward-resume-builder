@@ -209,6 +209,8 @@ async def update_my_resume(
 ):
     """Update the user's most recent resume."""
     try:
+        # Log the incoming data for debugging
+        logger.info(f"Received resume update data: {resume_data.dict(exclude_unset=True)}")
         resumes = await ResumeService.get_user_resumes(str(current_user.id), limit=1)
         if not resumes:
             raise HTTPException(status_code=404, detail="Resume not found")
@@ -244,6 +246,8 @@ async def update_my_resume(
         raise
     except Exception as e:
         logger.error(f"Error updating resume for user {current_user.id}: {e}")
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception details: {str(e)}")
         raise HTTPException(status_code=500, detail="Error updating resume")
 
 @router.put("/{resume_id}", response_model=SuccessResponse)
