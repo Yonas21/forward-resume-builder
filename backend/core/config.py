@@ -2,6 +2,7 @@
 Core configuration settings for the Resume Builder application.
 """
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import List
 
 
@@ -54,15 +55,19 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     
-    # CORS - Environment specific origins
-    allowed_origins: List[str] = [
-        "http://localhost",
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://forward-resume-builder.web.app",  # Firebase frontend
-        "https://forward-resume-builder.vercel.app",  # Vercel frontend
-    ]
+    # CORS - Environment specific origins (comma-separated string from env, converted to list)
+    allowed_origins_str: str = Field(
+        default="http://localhost,http://localhost:3000,http://localhost:5173,http://localhost:5174,https://forward-resume-builder.web.app,https://forward-resume-builder.vercel.app",
+        alias="allowed_origins"
+    )
+    
+    @property
+    def allowed_origins(self) -> List[str]:
+        """Get allowed origins as a list."""
+        if self.allowed_origins_str.strip():
+            return [origin.strip() for origin in self.allowed_origins_str.split(',') if origin.strip()]
+        else:
+            return []
     
     @property
     def cors_origins(self) -> List[str]:
@@ -116,10 +121,12 @@ class Settings(BaseSettings):
         """Check if running in staging environment."""
         return self.environment == "staging"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        env_prefix = ""  # No prefix for environment variables
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": False,
+        "env_prefix": "",  # No prefix for environment variables
+        "env_parse_none_str": "None",
+    }
         
 
 # Global settings instance
