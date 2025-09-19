@@ -128,11 +128,11 @@ settings = Settings()
 # Log configuration on startup
 if settings.is_development():
     print(f"🚀 Starting in DEVELOPMENT mode")
-    print(f"📊 Log level: {settings.effective_log_level}")
+    print(f"📊 Log level --------------------: {settings.effective_log_level}")
     print(f"🌐 CORS origins: {settings.cors_origins}")
 elif settings.is_staging():
     print(f"🧪 Starting in STAGING mode")
-    print(f"📊 Log level: {settings.effective_log_level}")
+    print(f"📊 Log level --------------------: {settings.effective_log_level}")
 else:
     print(f"🏭 Starting in PRODUCTION mode")
-    print(f"📊 Log level: {settings.effective_log_level}")
+    print(f"📊 Log level --------------------: {settings.effective_log_level}")
